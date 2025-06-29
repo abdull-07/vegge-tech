@@ -1,0 +1,62 @@
+@import url('https://fonts.googleapis.com/css2?family=Imperial+Script&family=Outfit:wght@100..900&display=swap');
+
+@import "tailwindcss";
+
+:root {
+  /* Brand Colors */
+  --primary: #78C043;         /* Green */
+  --primary-hover: #5aa52d;
+  --primary-active: #4a8e26;
+
+  --secondary: #FFA100;       /* Orange */
+  --secondary-hover: #e98d00;
+  --secondary-active: #cc7b00;
+
+  /* Accent Colors */
+  --accent-red: #F94B4B;
+  --accent-pink: #E53977;
+  --accent-yellow: #FDE900;
+
+  /* Text Colors */
+  --text: #2D2D2D;
+  --text-light: #666666;
+  --text-white: #ffffff;
+
+  /* Backgrounds */
+  --background: #ffffff;
+  --background-dark: #f4f4f4;
+}
+
+
+.bg-primary        { background-color: var(--primary); }
+.bg-primary-hover  { background-color: var(--primary-hover); }
+.bg-primary-active { background-color: var(--primary-active); }
+
+.bg-secondary        { background-color: var(--secondary); }
+.bg-secondary-hover  { background-color: var(--secondary-hover); }
+.bg-secondary-active { background-color: var(--secondary-active); }
+
+.bg-accent-red    { background-color: var(--accent-red); }
+.bg-accent-pink   { background-color: var(--accent-pink); }
+.bg-accent-yellow { background-color: var(--accent-yellow); }
+
+.bg-background      { background-color: var(--background); }
+.bg-background-dark { background-color: var(--background-dark); }
+
+/* ✅ Text utilities */
+.text-primary       { color: var(--primary); }
+.text-secondary     { color: var(--secondary); }
+.text-text          { color: var(--text); }
+.text-text-light    { color: var(--text-light); }
+.text-text-white    { color: var(--text-white); }
+
+/* ✅ Border utilities */
+.border-primary     { border-color: var(--primary); }
+.border-secondary   { border-color: var(--secondary); }
+
+/* ✅ Hover + Active */
+.hover\:bg-primary-hover:hover    { background-color: var(--primary-hover); }
+.active\:bg-primary-active:active { background-color: var(--primary-active); }
+
+.hover\:bg-secondary-hover:hover    { background-color: var(--secondary-hover); }
+.active\:bg-secondary-active:active { background-color: var(--secondary-active); }
