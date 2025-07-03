@@ -1,0 +1,51 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+dist/
+build/
+.env
+.env.* # Ignore environment-specific env files
+*.local
+
+# Logs
+logs
+*.log
+log/
+debug.log
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# IDE-specific
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Coverage reports
+coverage/
+.nyc_output/
+
+# Optional: database or uploads (if generated during runtime)
+uploads/
+database.sqlite
+*.sqlite3
+
+# Optional: PM2 logs
+pids
+*.pid
+*.seed
+
+# Optional: compiled output if using TypeScript
+*.tsbuildinfo
+
+# Optional: Ignore test coverage or jest cache
+coverage/
+jest-cache/
+jest-config/

@@ -44,7 +44,7 @@ STRIPE_SECRET=your-stripe-key```
 
 ### 4️⃣ Run the Project
 #### Frontend
-```sh 
+```sh
 cd frontend
 npm run dev
 ```
