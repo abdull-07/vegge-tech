@@ -1,13 +1,13 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const connectDB = async () => {
     try {
-        mongoose.connection.on('connected', () => console.log("Database Connected"))
-
-        await mongoose.connect(`${process.env.MONGODB_UID}/veggetech`)
+        const conn = await mongoose.connect(process.env.MONGO_URL, {});
+        console.log(`MongoDB connected: ${conn.connection.host}`);
     } catch (error) {
-        console.log("error.massage")
+        console.error(`MongoDB connection error: ${error.message}`);
+        process.exit(1);
     }
-}
+};
 
-export default connectDB
+export default connectDB;

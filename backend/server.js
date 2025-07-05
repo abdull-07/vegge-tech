@@ -1,29 +1,40 @@
+import express from 'express'
+import dotenv from 'dotenv'
 import cookieParser from 'cookie-parser'
-import express  from 'express'
 import cors from 'cors'
-import connectDB from './configs/db.js'
-import 'dotenv/config'
-import userRouter from './routes/userRoute.js'
+import connnectDB from "./configs/db.js"
+import connectCloudinary from './configs/cloudinary.js'
+import userRoute from "./routes/userRoute.js"
+import sellerRoute from "./routes/sellerRoute.js"
+// import 'dotenv/config'
 
+// !.env config
+dotenv.config()
 
 const app = express()
-const port = process.env.port || 3000
 
-// Alowed origins
-const allowedOrigins = ['http://localhost:5173']
+await connnectDB() // Connect to MongoDB
+await connectCloudinary() // connect to cloudinary
 
-await connectDB()
+const port = process.env.PROT || 3000 // listion on port
 
-// !Middlewares
-app.use(express.json())
+
+const allowedOrigins = ['http://localhost:5173'] // Allow multiple origins
+
+// Middleware Configs
+app.use(express.json()) // to parse JSON body
 app.use(cookieParser())
-app.use(cors({origin: allowedOrigins, Credential: true}))
+app.use(cors({origin: allowedOrigins, credentials: true}))
 
 app.get('/', (req, res) => {
-  res.send('Backend server  running')
+  res.send('Hello World!')
 })
 
-app.use('/api/user', userRouter)
+// User Routes
+app.use('/api/user', userRoute)
+
+// Seller Routes
+app.use('/api/seller', sellerRoute)
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
