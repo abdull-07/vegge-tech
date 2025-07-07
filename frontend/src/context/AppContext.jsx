@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {productsData} from "../assets/productsdata.js";
 import toast from "react-hot-toast";
+import axios from "axios";
 
 
 // Create Context
@@ -93,7 +94,8 @@ const getTotalCartPrice = () => {
     // get all the value of Context an used in return  blow
     const value = {
         navigate, user, setUser, isSeller, setisSeller, showUserLogin, setShowUserLogin, products, setProducts, cartItems, addToCart, updateCart, 
-        removeProductFromCart, seacrhQuery, setSeacrhQuery, reviews, setReviews, reviewForm, setReviewForm, getTotalCartItems, getTotalCartPrice
+        removeProductFromCart, seacrhQuery, setSeacrhQuery, reviews, setReviews, reviewForm, setReviewForm, getTotalCartItems, getTotalCartPrice, 
+        axios
     };
 
     return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

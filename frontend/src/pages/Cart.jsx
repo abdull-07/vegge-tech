@@ -71,7 +71,7 @@ const Cart = () => {
 
   // Convert address object to array of formatted strings
   const formatAddress = (addr) =>
-    `${addr.firstName || ''} ${addr.lastName || ''}, ${addr.street}, ${addr.city}, ${addr.state}, ${addr.zipcode}`;
+    `${addr.firstName || ''} ${addr.lastName || ''}, ${addr.street}, ${addr.phone}, ${addr.city}, ${addr.state}, ${addr.zipcode}`;
 
   // Payment Handler function
   const handlePlaceOrder = async () => {
@@ -262,7 +262,7 @@ const Cart = () => {
           }
           setAddresses(prev => [...prev, newAddress]);
           setSelectedAddress(newAddress);
-          setNewAddress({ firstName: "", lastName: "", street: "", city: "", state: "", zipcode: "" });
+          setNewAddress({ firstName: "", lastName: "", street: "", phone: "", city: "", state: "", zipcode: "" });
           setShowNewAddressForm(false);
           toast.success("Address added!");
         }}
@@ -291,6 +291,14 @@ const Cart = () => {
           placeholder="Street Address"
           value={newAddress.street}
           onChange={(e) => setNewAddress({ ...newAddress, street: e.target.value })}
+          className="w-full border border-gray-300 px-3 py-2 rounded outline-none"
+          required
+        />
+        <input
+          type="text"
+          placeholder="Phone Number"
+          value={newAddress.phone}
+          onChange={(e) => setNewAddress({ ...newAddress, phone: e.target.value })}
           className="w-full border border-gray-300 px-3 py-2 rounded outline-none"
           required
         />

@@ -4,9 +4,13 @@ import Product from '../models/Products.js';
 // Add Products
 export const addProduct = async (req, res) => {
     try {
-        let product = JSON.parse( req.body.productData)
+        let productData = (req.body.productData)
 
-        const images = req.files
+        const images = req.files || []
+
+        if (!images.length) {
+      return res.status(400).json({ message: "No images uploaded" });
+    }
 
         let imagesUrl = await Promise.all(
             images.map(async (i) => {
@@ -46,8 +50,9 @@ export const getProduct = async (req, res) => {
 // Get Single Products
 export const getSingleProduct = async (req, res) => {
     try {
-        const productId = req.body
-        
+        const {id} = req.params
+        const product = await Product.findById(id)
+        res.status(200).json({product})
     } catch (error) {
         console.error("Error in fetching single product:", error);
         res.status(500).json({ message: "Internal Server Error" });
@@ -56,5 +61,12 @@ export const getSingleProduct = async (req, res) => {
 
 // Change Product in Stock
 export const changeStock = async (req, res) => {
-    
+    try {
+        const {id, inStock} = req.body
+        await Product.findByIdAndUpdate(id, {inStock})
+        res.status(200).json({massage: "Stock Upated Successfully"})
+    } catch (error) {
+        console.error("Error in fetching products:", error);
+        res.status(500).json({ message: "Internal Server Error" })
+    }
 }

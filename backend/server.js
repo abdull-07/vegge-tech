@@ -6,6 +6,11 @@ import connnectDB from "./configs/db.js"
 import connectCloudinary from './configs/cloudinary.js'
 import userRoute from "./routes/userRoute.js"
 import sellerRoute from "./routes/sellerRoute.js"
+import productRoute from './routes/productRoute.js'
+import cartRoute from './routes/cartRoute.js'
+import addressRoute from './routes/addressRoute.js'
+import OrdersRoute from './routes/OrdersRoute.js'
+import paymentRouter from './routes/paymentRoute.js'
 // import 'dotenv/config'
 
 // !.env config
@@ -35,6 +40,22 @@ app.use('/api/user', userRoute)
 
 // Seller Routes
 app.use('/api/seller', sellerRoute)
+
+// Products Routes
+app.use('/api/product', productRoute)
+
+//Cart Routes
+app.use('/api/cart', cartRoute)
+
+// Update Address Route
+app.use('/api/address', addressRoute)
+
+// Order Route
+app.use('/api/order', OrdersRoute)
+
+// Payment Route
+app.use('/api/payment', paymentRouter);
+
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
