@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
+import toast from 'react-hot-toast';
 
 const AddProduct = () => {
   const [file, setFile] = useState([]);
@@ -8,7 +9,7 @@ const AddProduct = () => {
   const [category, setCategory] = useState('');
   const [price, setPrice] = useState('');
   const [offerPrice, setOfferPrice] = useState('');
-  const { products } = useAppContext();
+  const { products, axios } = useAppContext();
 
   const allProducts = [
     ...(products.fruits || []),
@@ -18,16 +19,47 @@ const AddProduct = () => {
 
   const categories = [...new Set(allProducts.map(item => item.category))];
 
-  const addProduct = (e) => {
+  const addProduct = async (e) => {
     e.preventDefault();
-    console.log({ file, name, description, category, price, offerPrice });
+    try {
+      const productData = {
+        name,
+        description: description.split('\n'),
+        category,
+        price,
+        offerPrice,
+      }
+
+      const formData = new FormData()
+      formData.append('productData', JSON.stringify(productData))
+      if (file) {
+        formData.append('images', file);
+      }
+      await axios.post('/api/product/add', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+
+      setName('')
+      setDescription('')
+      setCategory('')
+      setPrice('')
+      setOfferPrice('')
+      setFile('')
+
+
+      toast.success("Product added successfully")
+
+    } catch (error) {
+      toast.error("Failed to add product");
+      console.error(error);
+    }
   };
 
   return (
     <div className="py-10 flex flex-col justify-between bg-background-light min-h-screen">
       <form
         onSubmit={addProduct}
-        className="bg-white border border-text-light/30 md:p-10 p-4 space-y-5 max-w-lg w-full rounded shadow-sm mx-auto"
+        className="bg-white md:p-10 p-4 space-y-5 w-full rounded shadow-sm mx-auto"
       >
         {/* Image Upload */}
         <div>

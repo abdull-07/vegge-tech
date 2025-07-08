@@ -4,7 +4,7 @@ import { addProduct, changeStock, getProduct, getSingleProduct } from '../contro
 import sellerAuth from '../middlewares/sellerAuth.js'
 
 const productRoute = express.Router()
-productRoute.post('/add', sellerAuth, stoteUpload.array(['images']), addProduct)
+productRoute.post('/add', sellerAuth, stoteUpload.single('images'), addProduct)
 productRoute.get('/all-products', getProduct)
 productRoute.get('/:id', getSingleProduct)
 productRoute.patch('/stock', sellerAuth, changeStock)

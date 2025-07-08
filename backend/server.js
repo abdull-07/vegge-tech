@@ -32,14 +32,14 @@ app.use(cookieParser())
 app.use(cors({origin: allowedOrigins, credentials: true}))
 
 app.get('/', (req, res) => {
-  res.send('Hello World!')
+  res.send('HOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO GAYAA CONNECTED')
 })
 
 // User Routes
 app.use('/api/user', userRoute)
 
 // Seller Routes
-app.use('/api/seller', sellerRoute)
+app.use('/api/seller/', sellerRoute)
 
 // Products Routes
 app.use('/api/product', productRoute)

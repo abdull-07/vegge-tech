@@ -2,9 +2,11 @@ import React from "react";
 import { useAppContext } from '../context/AppContext'
 import { NavLink, Outlet } from "react-router-dom";
 import NavLogo from "../assets/nav-log0.svg"
+import toast from "react-hot-toast";
+import axios from "axios";
 
 const SellerDashboard = () => {
-  const { isSeller, setisSeller, navigate  } = useAppContext()
+  const { isSeller, setisSeller, navigate } = useAppContext()
 
   const dashboardIcon = (
     <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none">
@@ -31,9 +33,17 @@ const SellerDashboard = () => {
   ];
 
   const logout = async () => {
-    setisSeller(false)
-    navigate('/seller')
+    try {
+      await axios.post('/api/seller/logout', {}, { withCredentials: true }); // Backend clears the cookie
+      setisSeller(false);
+      toast.success("Seller logged out");
+      navigate('/seller');
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("Logout failed");
+    }
   }
+  
   return (
     <>
       {/* Top Bar */}

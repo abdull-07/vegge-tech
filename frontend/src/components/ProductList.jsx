@@ -16,7 +16,7 @@ const ProductList = () => {
       <div className="w-full md:p-10 p-4">
         <h2 className="pb-4 text-xl font-semibold text-text">All Products</h2>
 
-        <div className="flex flex-col items-center max-w-4xl w-full overflow-hidden rounded-md bg-white border border-text-light/30 shadow-sm">
+        <div className="flex flex-col items-center w-full overflow-hidden rounded-md bg-white shadow-sm">
           <table className="md:table-auto table-fixed w-full overflow-hidden">
             <thead className="text-text text-sm text-left bg-gray-100">
               <tr>

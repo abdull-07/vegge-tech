@@ -16,7 +16,7 @@ const Orders = () => {
       {order.map((order, index) => (
         <div
           key={index}
-          className="flex flex-col md:grid md:grid-cols-[2fr_1fr_1fr_1fr] md:items-center gap-5 p-5 rounded-md border border-text-light/30 bg-white text-text-light shadow-sm max-w-4xl"
+          className="flex flex-col md:grid md:grid-cols-[2fr_1fr_1fr_1fr] md:items-center gap-5 p-5 rounded-md border border-text-light/30 bg-white text-text-light shadow-sm w-full"
         >
           {/* Product Info */}
           <div className="flex gap-5">

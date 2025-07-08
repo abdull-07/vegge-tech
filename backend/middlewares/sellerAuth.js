@@ -9,7 +9,7 @@ const sellerAuth = async (req, res, next) => {
     try {
         const decoded = jwt.verify(sellerToken, process.env.JWT_SECRET)
         if (decoded.email === process.env.ADMIN_EMAIL) { 
-            req.userEmail = decoded.email; 
+            req.userEmail = decoded.email;
             next();
         } else {
             return res.status(401).json({message: "Unauthorized, Invalid token"})
