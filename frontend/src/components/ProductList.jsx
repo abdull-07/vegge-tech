@@ -6,9 +6,8 @@ const ProductList = () => {
 
   // Flatten all product arrays
   const allProducts = [
-    ...(products.fruits || []),
-    ...(products.vegetables || []),
-    ...(products.deals || [])
+  ...(products.fruits || []),
+  ...(products.vegetables || []),
   ];
 
   return (
@@ -31,7 +30,7 @@ const ProductList = () => {
                 <tr key={product._id} className="border-t border-text-light/30 hover:bg-background-light/50 transition">
                   <td className="md:px-4 pl-2 md:pl-4 py-3 flex items-center space-x-3 truncate">
                     <div className="border border-text-light/40 rounded p-2">
-                      <img src={product.image} alt="Product" className="w-16 h-16 object-cover rounded" />
+                      <img src={product.imageUrl} alt="Product" className="w-16 h-16 object-cover rounded" />
                     </div>
                     <span className="truncate max-sm:hidden w-full">{product.name}</span>
                   </td>
@@ -57,5 +56,4 @@ const ProductList = () => {
     </div>
   );
 };
-
 export default ProductList;

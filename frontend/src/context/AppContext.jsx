@@ -7,6 +7,8 @@ import axios from "axios";
 // Backend Intigration
 axios.defaults.withCredentials = true
 axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
+// axios.defaults.baseURL = "http://localhost:3000";
+// console.log("Axios Base URL:", axios.defaults.baseURL);
 
 // Create Context
 export const AppContext = createContext();
@@ -17,7 +19,7 @@ export const AppContextProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [isSeller, setisSeller] = useState(false);
     const [showUserLogin, setShowUserLogin] = useState(false);
-    const [products, setProducts] = useState(productsData);
+    const [products, setProducts] = useState([]);
     const [cartItems, setCartItems] = useState({});
     const [seacrhQuery, setSeacrhQuery] = useState("");
     const [reviews, setReviews] = useState([]);
@@ -41,7 +43,22 @@ export const AppContextProvider = ({ children }) => {
 
     // Fetch Products
     const fetchProducts = async () => {
-        setProducts(productsData)
+        try {
+            const { data } = await axios.get('/api/product/all-products');
+            // Group products by category
+            const grouped = {
+                fruits: data.products.filter(p => p.category === "Fruits" || p.category === "fruits"),
+                vegetables: data.products.filter(p => p.category === "Vegetables" || p.category === "vegetables"),
+                deals: data.products.filter(p => p.category === "Bundle" || p.category === "Deals"),
+            };
+            if (!data) {
+                toast.error("No Product to show")
+            }
+            setProducts(grouped);
+        } catch (error) {
+            toast.error("Failed to load product");
+            console.error(error);
+        }
     }
 
     // Add to Cart
@@ -117,7 +134,7 @@ export const AppContextProvider = ({ children }) => {
     const value = {
         navigate, user, setUser, isSeller, setisSeller, showUserLogin, setShowUserLogin, products, setProducts, cartItems, addToCart, updateCart,
         removeProductFromCart, seacrhQuery, setSeacrhQuery, reviews, setReviews, reviewForm, setReviewForm, getTotalCartItems, getTotalCartPrice,
-        axios,
+        axios, fetchSeller
     };
 
     return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

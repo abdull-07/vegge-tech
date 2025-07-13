@@ -11,13 +11,7 @@ const AddProduct = () => {
   const [offerPrice, setOfferPrice] = useState('');
   const { products, axios } = useAppContext();
 
-  const allProducts = [
-    ...(products.fruits || []),
-    ...(products.vegetables || []),
-    ...(products.deals || [])
-  ];
-
-  const categories = [...new Set(allProducts.map(item => item.category))];
+  const categories = ["Fruits", "Vegetables"];
 
   const addProduct = async (e) => {
     e.preventDefault();
@@ -114,6 +108,7 @@ const AddProduct = () => {
         </div>
 
         {/* Category */}
+        {/* Category */}
         <div className="flex flex-col gap-1">
           <label className="text-base font-medium text-text" htmlFor="category">Category</label>
           <select
@@ -128,6 +123,7 @@ const AddProduct = () => {
             ))}
           </select>
         </div>
+
 
         {/* Prices */}
         <div className="flex items-center gap-5 flex-wrap">
