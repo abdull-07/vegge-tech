@@ -56,7 +56,6 @@ app.use('/api/order', OrdersRoute)
 // Payment Route
 app.use('/api/payment', paymentRouter);
 
-
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
