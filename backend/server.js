@@ -21,7 +21,7 @@ const app = express()
 await connnectDB() // Connect to MongoDB
 await connectCloudinary() // connect to cloudinary
 
-const port = process.env.PROT || 3000 // listion on port
+const port = process.env.PORT || 3000 // listen on port
 
 
 const allowedOrigins = ['http://localhost:5173'] // Allow multiple origins

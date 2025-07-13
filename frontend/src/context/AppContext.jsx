@@ -19,7 +19,7 @@ export const AppContextProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [isSeller, setisSeller] = useState(false);
     const [showUserLogin, setShowUserLogin] = useState(false);
-    const [products, setProducts] = useState([]);
+    const [products, setProducts] = useState({ fruits: [], vegetables: [], deals: [] });
     const [cartItems, setCartItems] = useState({});
     const [seacrhQuery, setSeacrhQuery] = useState("");
     const [reviews, setReviews] = useState([]);
@@ -51,13 +51,15 @@ export const AppContextProvider = ({ children }) => {
                 vegetables: data.products.filter(p => p.category === "Vegetables" || p.category === "vegetables"),
                 deals: data.products.filter(p => p.category === "Bundle" || p.category === "Deals"),
             };
-            if (!data) {
-                toast.error("No Product to show")
+            if (!data || !data.products || data.products.length === 0) {
+                toast.error("No products available")
             }
             setProducts(grouped);
         } catch (error) {
-            toast.error("Failed to load product");
-            console.error(error);
+            toast.error(`Failed to load products: ${error.response?.data?.message || error.message}`);
+            console.error("Product fetch error:", error);
+            // Set empty categories to prevent undefined errors
+            setProducts({ fruits: [], vegetables: [], deals: [] });
         }
     }
 
@@ -97,8 +99,8 @@ export const AppContextProvider = ({ children }) => {
         fetchSeller().then(() => {
             if (isSeller) navigate("/seller");
         });
-        fetchProducts()
-    }, [])
+        fetchProducts();
+    }, []); // Empty dependency array means it runs once on component mount
 
     // Calculate Total Cart items
     const getTotalCartItems = () => {

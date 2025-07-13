@@ -40,7 +40,7 @@ export const addProduct = async (req, res) => {
 // Get Products
 export const getProduct = async (req, res) => {
     try {
-        const products = await Product.find({ isAvailable: true }) // Fetch all products that are available
+        const products = await Product.find({}) // Fetch all products that are available
         if (!products || products.length === 0) {
             return res.status(404).json({ message: "No products found" });
         }
@@ -48,9 +48,8 @@ export const getProduct = async (req, res) => {
         res.status(200).json({products});
     } catch (error) {
         console.error("Error in fetching products:", error);
-        res.status(500).json({ message: "Internal Server Error" });
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
-
 }
 
 // Get Single Products
