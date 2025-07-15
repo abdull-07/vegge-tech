@@ -1,14 +1,43 @@
 import React from 'react';
+import toast from 'react-hot-toast';
 import { useAppContext } from '../context/AppContext';
 
 const ProductList = () => {
-  const { products } = useAppContext();
+  const { products, axios, setProducts } = useAppContext();
 
   // Flatten all product arrays
   const allProducts = [
-  ...(products.fruits || []),
-  ...(products.vegetables || []),
+    ...(products.fruits || []),
+    ...(products.vegetables || []),
   ];
+
+  const toggleStock = async (id, current) => {
+    setProducts(prev => {
+      const update = { ...prev };
+      ["fruits", "vegetables"].forEach(cat => {
+        update[cat] = (update[cat] || []).map(p =>
+          p._id === id ? { ...p, inStock: !current} : p
+        );
+      });
+      return update;
+    });
+
+    try {
+      await axios.patch("/api/product/stock", {id, inStock: !current })
+      toast.success("Stock status saved")
+    } catch (error) {
+          setProducts(prev => {
+      const revert = { ...prev };
+      ["fruits","vegetables"].forEach(cat => {
+        revert[cat] = (revert[cat] || []).map(p =>
+          p._id === id ? { ...p, inStock: current } : p
+        );
+      });
+      return revert;
+    });
+    toast.error(err.response?.data?.message || "Failed to save");
+    }
+  }
 
   return (
     <div className="flex-1 py-10 flex flex-col justify-between bg-background-light min-h-screen">
@@ -29,8 +58,8 @@ const ProductList = () => {
               {allProducts.map((product) => (
                 <tr key={product._id} className="border-t border-text-light/30 hover:bg-background-light/50 transition">
                   <td className="md:px-4 pl-2 md:pl-4 py-3 flex items-center space-x-3 truncate">
-                    <div className="border border-text-light/40 rounded p-2">
-                      <img src={product.imageUrl} alt="Product" className="w-16 h-16 object-cover rounded" />
+                    <div className="rounded p-2">
+                      <img src={product.imageUrl} alt="Product" className="w-16 h-16 object-contain rounded" />
                     </div>
                     <span className="truncate max-sm:hidden w-full">{product.name}</span>
                   </td>
@@ -42,8 +71,9 @@ const ProductList = () => {
                         type="checkbox"
                         className="sr-only peer"
                         defaultChecked={product.inStock}
+                        onClick={() => toggleStock(product._id, product.inStock)}
                       />
-                      <div className="w-12 h-7 bg-gray-300 rounded-full peer peer-checked:bg-primary transition-colors duration-200"></div>
+                      <div className="w-12 h-7 bg-gray-300 rounded-full peer peer-checked:bg-green-500 transition-colors duration-200"></div>
                       <span className="dot absolute left-1 top-1 w-5 h-5 bg-white rounded-full transition-transform duration-200 ease-in-out peer-checked:translate-x-5"></span>
                     </label>
                   </td>

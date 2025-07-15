@@ -26,7 +26,7 @@ export const addProduct = async (req, res) => {
 
         // Create product
 
-        await Product.create({ ...productData, sellerId: req.userId, imageUrl: imagesUrl, isAvailable: true });
+        await Product.create({ ...productData, sellerId: req.userId, imageUrl: imagesUrl });
 
         res.status(201).json({ message: "Product added successfully" });
 
@@ -40,12 +40,12 @@ export const addProduct = async (req, res) => {
 // Get Products
 export const getProduct = async (req, res) => {
     try {
-        const products = await Product.find({}) // Fetch all products that are available
+        const products = await Product.find({isAvailable: true}) // Fetch all products that are available
         if (!products || products.length === 0) {
             return res.status(404).json({ message: "No products found" });
         }
 
-        res.status(200).json({products});
+        res.status(200).json({ products });
     } catch (error) {
         console.error("Error in fetching products:", error);
         res.status(500).json({ message: "Internal Server Error", error: error.message });
@@ -68,6 +68,7 @@ export const getSingleProduct = async (req, res) => {
 export const changeStock = async (req, res) => {
     try {
         const { id, inStock } = req.body
+        if (!id) return res.status(400).json({ message: "Missing product id" })
         await Product.findByIdAndUpdate(id, { inStock })
         res.status(200).json({ massage: "Stock Upated Successfully" })
     } catch (error) {

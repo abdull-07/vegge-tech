@@ -49,7 +49,7 @@ export const AppContextProvider = ({ children }) => {
             const grouped = {
                 fruits: data.products.filter(p => p.category === "Fruits" || p.category === "fruits"),
                 vegetables: data.products.filter(p => p.category === "Vegetables" || p.category === "vegetables"),
-                deals: data.products.filter(p => p.category === "Bundle" || p.category === "Deals"),
+                // deals: data.products.filter(p => p.category === "Bundle" || p.category === "Deals"),
             };
             if (!data || !data.products || data.products.length === 0) {
                 toast.error("No products available")
@@ -59,7 +59,7 @@ export const AppContextProvider = ({ children }) => {
             toast.error(`Failed to load products: ${error.response?.data?.message || error.message}`);
             console.error("Product fetch error:", error);
             // Set empty categories to prevent undefined errors
-            setProducts({ fruits: [], vegetables: [], deals: [] });
+            setProducts({ fruits: [], vegetables: [] });
         }
     }
 

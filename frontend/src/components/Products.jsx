@@ -4,12 +4,14 @@ import ProductCard from "../components/ProductCard";
 
 const Products = () => {
   const { products, seacrhQuery } = useAppContext();
-  const { fruits, vegetables } = products;
 
   const query = seacrhQuery?.toLowerCase().trim();
 
   // Combine all products
-  const allProducts = [...fruits, ...vegetables];
+  const allProducts = [
+    ...(products.fruits || []),
+    ...(products.vegetables || [])
+  ];
 
   // Filter matching products by name or category
   const filteredProducts = query
