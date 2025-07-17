@@ -23,6 +23,10 @@ import FAQ from './pages/faq'
 import Contact from './pages/Contact';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import DealsOffers from './pages/DealsOffers';
+import VerifyEmail from './pages/VerifyEmail';
+import ResendVerification from './pages/ResendVerification';
+import ResetPassword from './pages/ResetPassword';
+import Account from './pages/Account';
 
 function App() {
   const isSellerPath = useLocation().pathname.includes("seller")
@@ -49,6 +53,10 @@ function App() {
               <Route path="product-list" element={<ProductList />} />
               <Route path="orders" element={<Orders />} />
             </Route>
+            <Route path="/verify-email/:token" element={<VerifyEmail />} />
+            <Route path="/resend-verification" element={<ResendVerification />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
+            <Route path="/account" element={<Account />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/faq" element={<FAQ />} />

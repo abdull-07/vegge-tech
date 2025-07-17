@@ -24,6 +24,8 @@ export const AppContextProvider = ({ children }) => {
     const [seacrhQuery, setSeacrhQuery] = useState("");
     const [reviews, setReviews] = useState([]);
     const [reviewForm, setReviewForm] = useState({ name: '', rating: 5, comment: '' });
+    const [isLoading, setIsLoading] = useState(true);
+    const [authChecked, setAuthChecked] = useState(false);
 
     // Fetch Seller
     const fetchSeller = async () => {
@@ -96,11 +98,26 @@ export const AppContextProvider = ({ children }) => {
     }
 
     useEffect(() => {
-        fetchSeller().then(() => {
-            if (isSeller) navigate("/seller");
-        });
-        fetchProducts();
+        const initializeApp = async () => {
+            // Check user authentication first
+            await checkUserAuth();
+            
+            // Then check seller authentication
+            await fetchSeller();
+            
+            // Finally fetch products
+            await fetchProducts();
+        };
+        
+        initializeApp();
     }, []); // Empty dependency array means it runs once on component mount
+    
+    // Navigate to seller dashboard if user is a seller
+    useEffect(() => {
+        if (isSeller && authChecked) {
+            navigate("/seller");
+        }
+    }, [isSeller, authChecked, navigate]);
 
     // Calculate Total Cart items
     const getTotalCartItems = () => {
@@ -132,11 +149,67 @@ export const AppContextProvider = ({ children }) => {
     };
 
 
+    // Check if user is authenticated
+    const checkUserAuth = async () => {
+        try {
+            setIsLoading(true);
+            const { data } = await axios.get('/api/user/check-auth');
+            if (data?.user) {
+                setUser(data.user);
+            } else {
+                setUser(null);
+            }
+        } catch (err) {
+            setUser(null);
+            console.error("User auth check failed:", err.response?.data?.message || err.message);
+        } finally {
+            setIsLoading(false);
+            setAuthChecked(true);
+        }
+    };
+
+    // Logout user
+    const logoutUser = async () => {
+        try {
+            await axios.get('/api/user/logout');
+            setUser(null);
+            toast.success("Logged out successfully");
+            navigate('/');
+        } catch (err) {
+            console.error("Logout failed:", err.response?.data?.message || err.message);
+            toast.error("Logout failed. Please try again.");
+        }
+    };
+
     // get all the value of Context an used in return  blow
     const value = {
-        navigate, user, setUser, isSeller, setisSeller, showUserLogin, setShowUserLogin, products, setProducts, cartItems, addToCart, updateCart,
-        removeProductFromCart, seacrhQuery, setSeacrhQuery, reviews, setReviews, reviewForm, setReviewForm, getTotalCartItems, getTotalCartPrice,
-        axios, fetchSeller
+        navigate, 
+        user, 
+        setUser, 
+        isSeller, 
+        setisSeller, 
+        showUserLogin, 
+        setShowUserLogin, 
+        products, 
+        setProducts, 
+        cartItems, 
+        addToCart, 
+        updateCart,
+        removeProductFromCart, 
+        seacrhQuery, 
+        setSeacrhQuery, 
+        reviews, 
+        setReviews, 
+        reviewForm, 
+        setReviewForm, 
+        getTotalCartItems, 
+        getTotalCartPrice,
+        axios, 
+        fetchSeller,
+        checkUserAuth,
+        logoutUser,
+        isLoading,
+        authChecked
     };
 
     return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
