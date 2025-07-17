@@ -11,7 +11,9 @@ const productSchema = new mongoose.Schema({
     sellerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Seller', required: false },
     ratings: { type: Number, default: 0, min: 0, max: 5 },
     reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Review' }],
-    isAvailable: { type: Boolean, default: true }
+    isAvailable: { type: Boolean, default: true },
+    isDeal: { type: Boolean, default: false } // Add this 
+
 
 }, { timestamps: true })
 

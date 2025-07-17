@@ -22,6 +22,7 @@ import MyOrders from './pages/MyOrders'
 import FAQ from './pages/faq'
 import Contact from './pages/Contact';
 import PrivacyPolicy from './pages/PrivacyPolicy';
+import DealsOffers from './pages/DealsOffers';
 
 function App() {
   const isSellerPath = useLocation().pathname.includes("seller")
@@ -38,6 +39,7 @@ function App() {
             <Route path="/all-products" element={<AllProducts />} />
             <Route path="/product/:id" element={<ProductDetails />} />
             <Route path="/about" element={<About />} />
+            <Route path="/deals-offers" element={<DealsOffers />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/my-orders" element={<MyOrders />} />

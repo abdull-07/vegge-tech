@@ -1,61 +1,83 @@
-import React from 'react';
+import React from "react";
 import { useAppContext } from "../context/AppContext";
 import ProductCard from "../components/ProductCard";
 
 const Products = () => {
   const { products, seacrhQuery } = useAppContext();
 
-  const query = seacrhQuery?.toLowerCase().trim();
+  /* ───────── derive category arrays ───────── */
+  const fruits = (products.fruits || []).filter(product => product.inStock);
+  const vegetables = (products.vegetables || []).filter(product => product.inStock);
+  const bundles = (products.bundles || []).filter(product => product.inStock);
 
-  // Combine all products
-  const allProducts = [
-    ...(products.fruits || []),
-    ...(products.vegetables || [])
-  ];
+  /* ───────── combine for searching ───────── */
+  const allProducts = [...fruits, ...vegetables, ...bundles];
 
-  // Filter matching products by name or category
+  const query = seacrhQuery?.toLowerCase().trim() || "";
+
   const filteredProducts = query
-    ? allProducts.filter((product) =>
-        product.name.toLowerCase().includes(query) ||
-        product.category.toLowerCase().includes(query)
+    ? allProducts.filter(
+        (p) =>
+          p.name.toLowerCase().includes(query) ||
+          p.category.toLowerCase().includes(query)
       )
     : [];
 
+  /* ───────── UI ───────── */
   return (
     <div className="max-w-7xl mx-auto px-2 sm:px-4 py-6 sm:py-10">
-      <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center">All Products</h2>
+      <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center">
+        All Products
+      </h2>
 
-      {query && (
+      {query ? (
+        /* ---------- search view ---------- */
         <>
-          <h3 className="text-xl font-medium mb-2">Search Results for: <span className="text-primary">{seacrhQuery}</span></h3>
+          <h3 className="text-xl font-medium mb-4">
+            Search results for&nbsp;
+            <span className="text-primary">{seacrhQuery}</span>
+          </h3>
 
-          {filteredProducts.length > 0 ? (
+          {filteredProducts.length ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
               {filteredProducts.map((product) => (
                 <ProductCard key={product._id} product={product} />
               ))}
             </div>
           ) : (
-            <p className="text-center text-text-light">No products found for your search.</p>
+            <p className="text-center text-text-light">
+              No products match your search.
+            </p>
           )}
         </>
-      )}
-
-      {!query && (
+      ) : (
+        /* ---------- default category view ---------- */
         <>
-          <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4 mt-6 sm:mt-8">🍎 Fruits</h3>
-          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
-            {fruits.map((product) => (
-              <ProductCard key={product._id} product={product} />
-            ))}
-          </div>
+          {/* Fruits */}
+          <h3 className="text-xl sm:text-2xl font-semibold mb-4">🍎 Fruits</h3>
+          {fruits.length ? (
+            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
+              {fruits.map((product) => (
+                <ProductCard key={product._id} product={product} />
+              ))}
+            </div>
+          ) : (
+            <p className="mb-8 text-text-light">No fruits available.</p>
+          )}
 
-          <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4 mt-10 sm:mt-12">🥕 Vegetables</h3>
-          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
-            {vegetables.map((product) => (
-              <ProductCard key={product._id} product={product} />
-            ))}
-          </div>
+          {/* Vegetables */}
+          <h3 className="text-xl sm:text-2xl font-semibold mt-10 mb-4">
+            🥕 Vegetables
+          </h3>
+          {vegetables.length ? (
+            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
+              {vegetables.map((product) => (
+                <ProductCard key={product._id} product={product} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-text-light">No vegetables available.</p>
+          )}
         </>
       )}
     </div>

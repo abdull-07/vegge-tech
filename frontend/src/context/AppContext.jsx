@@ -19,7 +19,7 @@ export const AppContextProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [isSeller, setisSeller] = useState(false);
     const [showUserLogin, setShowUserLogin] = useState(false);
-    const [products, setProducts] = useState({ fruits: [], vegetables: [], deals: [] });
+    const [products, setProducts] = useState({ fruits: [], vegetables: [], bundles: [] });
     const [cartItems, setCartItems] = useState({});
     const [seacrhQuery, setSeacrhQuery] = useState("");
     const [reviews, setReviews] = useState([]);
@@ -49,7 +49,7 @@ export const AppContextProvider = ({ children }) => {
             const grouped = {
                 fruits: data.products.filter(p => p.category === "Fruits" || p.category === "fruits"),
                 vegetables: data.products.filter(p => p.category === "Vegetables" || p.category === "vegetables"),
-                // deals: data.products.filter(p => p.category === "Bundle" || p.category === "Deals"),
+                bundles: data.products.filter(p => p.category === "Bundles" || p.category.toLowerCase() === "bundles"),
             };
             if (!data || !data.products || data.products.length === 0) {
                 toast.error("No products available")
@@ -59,7 +59,7 @@ export const AppContextProvider = ({ children }) => {
             toast.error(`Failed to load products: ${error.response?.data?.message || error.message}`);
             console.error("Product fetch error:", error);
             // Set empty categories to prevent undefined errors
-            setProducts({ fruits: [], vegetables: [] });
+            setProducts({ fruits: [], vegetables: [], bundles: []  });
         }
     }
 

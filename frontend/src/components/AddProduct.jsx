@@ -11,7 +11,7 @@ const AddProduct = () => {
   const [offerPrice, setOfferPrice] = useState('');
   const { products, axios } = useAppContext();
 
-  const categories = ["Fruits", "Vegetables"];
+  const categories = ["Fruits", "Vegetables", "Bundles"];
 
   const addProduct = async (e) => {
     e.preventDefault();

@@ -6,18 +6,46 @@ const UserLogin = () => {
   const [name, setName] = React.useState('');
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
-  const {setShowUserLogin, setUser} = useAppContext();
-
+  const [error, setError] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+  const { setShowUserLogin, setUser } = useAppContext();
 
   const submitHandler = async (event) => {
-   event.preventDefault();
-   setUser({ email:"text@veggetech.com", name:"VeggeTech", password:"Vegge_Tech_20" });
-   setShowUserLogin(false);
-  }
- 
+    event.preventDefault();
+    setError('');
+    setLoading(true);
+
+    const url = state === 'login' ? '/api/user/login' : '/api/user/register';
+    const body = state === 'login' ? { email, password } : { name, email, password };
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        credentials: 'include', // to include httpOnly cookies
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message || 'Something went wrong');
+        setLoading(false);
+        return;
+      }
+
+      setUser(data.user);
+      setShowUserLogin(false);
+      setLoading(false);
+    } catch (err) {
+      setError('Network error, please try again');
+      setLoading(false);
+    }
+  };
+
   return (
-    <div onClick={()=>setShowUserLogin(false)} className="fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center bg-primary z-50">
-      <form onSubmit={submitHandler} onClick={(e)=>e.stopPropagation()} className="flex flex-col gap-4 m-auto items-start p-8 py-12 w-80 sm:w-[352px] rounded-lg shadow-xl border border-gray-200 bg-background">
+    <div onClick={() => setShowUserLogin(false)} className="fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center bg-primary z-50">
+      <form onSubmit={submitHandler} onClick={(e) => e.stopPropagation()} className="flex flex-col gap-4 m-auto items-start p-8 py-12 w-80 sm:w-[352px] rounded-lg shadow-xl border border-gray-200 bg-background">
         <p className="text-2xl font-medium m-auto text-text">
           <span className="text-secondary">User</span> {state === 'login' ? 'Login' : 'Sign Up'}
         </p>
@@ -60,6 +88,8 @@ const UserLogin = () => {
           />
         </div>
 
+        {error && <p className="text-red-600 text-sm">{error}</p>}
+
         <p className="text-sm text-text-light">
           {state === 'register' ? (
             <>
@@ -84,12 +114,12 @@ const UserLogin = () => {
           )}
         </p>
 
-        <button className="bg-primary hover:bg-primary-hover text-white w-full py-2 rounded-md transition">
-          {state === 'register' ? 'Create Account' : 'Login'}
+        <button disabled={loading} className="bg-primary hover:bg-primary-hover text-white w-full py-2 rounded-md transition">
+          {loading ? (state === 'register' ? 'Creating...' : 'Logging in...') : (state === 'register' ? 'Create Account' : 'Login')}
         </button>
       </form>
     </div>
   );
 };
 
-export default UserLogin;
+export default UserLogin

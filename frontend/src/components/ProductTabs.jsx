@@ -1,10 +1,14 @@
 import { useState } from "react";
 import ProductCard from "./ProductCard";
-import { productsData } from "../assets/productsdata";
+import { useAppContext } from "../context/AppContext"; // Import useAppContext
 
 const ProductTabs = () => {
   const [activeTab, setActiveTab] = useState("fruits");
-  const products = productsData[activeTab]?.slice(0, 8);
+  const { products } = useAppContext(); // Use products from AppContext
+
+  // Filter products by inStock: true and then by activeTab
+  const filteredProducts = (products[activeTab] || []).filter(product => product.inStock);
+  const productsToDisplay = filteredProducts.slice(0, 8); // Apply slice after filtering
 
   return (
     <div className="max-w-7xl mx-auto py-10 px-4">
@@ -26,7 +30,7 @@ const ProductTabs = () => {
 
       {/* Product Grid */}
       <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 ">
-        {products.map((product, index) => (
+        {productsToDisplay.map((product, index) => (
           <ProductCard key={index} product={product} />
         ))}
       </div>

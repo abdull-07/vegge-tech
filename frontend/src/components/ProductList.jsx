@@ -9,12 +9,13 @@ const ProductList = () => {
   const allProducts = [
     ...(products.fruits || []),
     ...(products.vegetables || []),
+    ...(products.bundles || []),
   ];
 
   const toggleStock = async (id, current) => {
     setProducts(prev => {
       const update = { ...prev };
-      ["fruits", "vegetables"].forEach(cat => {
+      ["fruits", "vegetables", "bundles"].forEach(cat => {
         update[cat] = (update[cat] || []).map(p =>
           p._id === id ? { ...p, inStock: !current} : p
         );
@@ -26,9 +27,9 @@ const ProductList = () => {
       await axios.patch("/api/product/stock", {id, inStock: !current })
       toast.success("Stock status saved")
     } catch (error) {
-          setProducts(prev => {
+          setProducts(prev => { 
       const revert = { ...prev };
-      ["fruits","vegetables"].forEach(cat => {
+      ["fruits","vegetables", "bundles"].forEach(cat => {
         revert[cat] = (revert[cat] || []).map(p =>
           p._id === id ? { ...p, inStock: current } : p
         );

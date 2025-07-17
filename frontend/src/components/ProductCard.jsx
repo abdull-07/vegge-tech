@@ -24,7 +24,7 @@ const ProductCard = ({ product }) => {
         <Link to={`/product/${product._id}`}>
           <img
             className="group-hover:scale-105 transition max-w-36"
-            src={product.image}
+            src={product.imageUrl}
             alt={product.name}
           />
         </Link>

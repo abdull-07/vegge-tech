@@ -6,7 +6,7 @@ const Cart = () => {
   const { navigate, products, cartItems, updateCart, removeProductFromCart, getTotalCartItems, getTotalCartPrice } = useAppContext();
 
   const [cartProducts, setCartProducts] = useState([])
-  const [showAddress, setShowAddress] = useState(false);
+  // const [showAddress, setShowAddress] = useState(false);
   const [addresses, setAddresses] = useState(users.map(u => u.address));
   const [selectedAddress, setSelectedAddress] = useState(addresses[0]);
   const [showAddressDropdown, setShowAddressDropdown] = useState(false);
@@ -120,7 +120,7 @@ const Cart = () => {
             <div className="flex items-center md:gap-6 gap-3">
               {/* Product Imge */}
               <div className="cursor-pointer w-24 h-24 flex items-center justify-center border border-gray-300 rounded">
-                <img className="max-w-full h-full object-cover" src={product.image} alt={product.name} />
+                <img className="max-w-full h-full object-cover" src={product.imageUrl} alt={product.name} />
               </div>
               {/* product Name and Quantity */}
               <div>
