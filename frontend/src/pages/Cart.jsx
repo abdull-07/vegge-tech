@@ -94,6 +94,10 @@ const Cart = () => {
   const deliveryFee = paymentOption === "Online" ? 0 : 30;
   const tax = +(subtotal * 0.05).toFixed(0); // 5% tax
   const totalAmount = subtotal + deliveryFee + tax;
+  
+  // Minimum order amount
+  const minimumOrderAmount = 1500;
+  const isOrderAmountValid = subtotal >= minimumOrderAmount;
 
 
   // Convert address object to array of formatted strings
@@ -270,8 +274,31 @@ const Cart = () => {
           </p>
         </div>
 
-        <button onClick={handlePlaceOrder} className="w-full py-3 mt-6 cursor-pointer bg-primary text-white font-medium hover:bg-secondary-hover transition">
-          {paymentOption === "Online" ? "Proceed to Checkout" : "Place Order"}
+        {/* Minimum Order Warning */}
+        {!isOrderAmountValid && (
+          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+            <p className="text-sm text-yellow-800">
+              <span className="font-medium">Minimum Order Required:</span> Rs. {minimumOrderAmount}
+            </p>
+            <p className="text-xs text-yellow-600 mt-1">
+              Add Rs. {minimumOrderAmount - subtotal} more to place your order
+            </p>
+          </div>
+        )}
+
+        <button 
+          onClick={handlePlaceOrder} 
+          disabled={!isOrderAmountValid}
+          className={`w-full py-3 mt-6 font-medium transition ${
+            isOrderAmountValid 
+              ? "cursor-pointer bg-primary text-white hover:bg-secondary-hover" 
+              : "cursor-not-allowed bg-gray-300 text-gray-500"
+          }`}
+        >
+          {!isOrderAmountValid 
+            ? `Minimum Order Rs. ${minimumOrderAmount}` 
+            : paymentOption === "Online" ? "Proceed to Checkout" : "Place Order"
+          }
         </button>
       </div>
 
