@@ -159,18 +159,48 @@ const Cart = () => {
     }
 
     if (paymentOption === "COD") {
-      // COD: Save order and show success
-      console.log("Order placed via COD:", {
-        cart: cartProducts,
-        address: selectedAddress,
-        payment: "Cash on Delivery",
-      });
+      if (!user) {
+        toast.error("Please login to place an order.");
+        return;
+      }
+
+      try {
+        // Prepare order data
+        const orderData = {
+          items: cartProducts.map(product => ({
+            product: product._id,
+            quantity: product.quantity
+          })),
+          address: {
+            firstName: selectedAddress.firstName,
+            lastName: selectedAddress.lastName,
+            streetAddress: selectedAddress.streetAddress || selectedAddress.street,
+            phoneNumber: selectedAddress.phoneNumber || selectedAddress.phone,
+            city: selectedAddress.city,
+            state: selectedAddress.state,
+            zipCode: selectedAddress.zipCode || selectedAddress.zipcode
+          }
+        };
+
+        console.log("Placing COD order:", orderData);
+
+        // Place the order via API
+        const response = await axios.post('/api/order/cod', orderData);
+
+        if (!response.data.message) {
+          throw new Error("Order placement failed");
+        }
+      } catch (error) {
+        console.error("Order placement error:", error);
+        toast.error(error.response?.data?.message || "Failed to place order. Please try again.");
+        return;
+      }
 
       // Clear the cart after successful order
       await clearCart();
 
       toast.success("Order placed successfully! We’ll deliver your items in 60 mints.");
-      navigate("/"); // Or navigate to an "Order Placed" page
+      navigate("/my-orders"); // Navigate to My Orders page
     } else if (paymentOption === "Online") {
       // Placeholder: In future, redirect to Stripe, Razorpay, or similar
       console.log("Redirecting to checkout...");

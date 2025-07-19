@@ -1,5 +1,6 @@
 import Order from "../models/OrdersModel.js";
 import Product from "../models/Products.js";
+import { createOrderNotification } from "./notificationController.js";
 
 // /api/order/cod
 export const placeOrderCOD = async (req, res) => {
@@ -7,31 +8,51 @@ export const placeOrderCOD = async (req, res) => {
         const userId = req.userId;
         const { items, address } = req.body;
 
+        // console.log("Order placement request:", { userId, items, address });
+
         if (!address || !items || items.length === 0) {
             return res.status(400).json({ message: "Invalid Data" });
         }
 
-        // Calculate total amount
-        const productAmount = await Promise.all(
+        // Calculate subtotal
+        const productAmounts = await Promise.all(
             items.map(async (item) => {
                 const product = await Product.findById(item.product);
+                if (!product) {
+                    throw new Error(`Product not found: ${item.product}`);
+                }
                 return product.offerPrice * item.quantity;
             })
         );
 
-        let amount = productAmount.reduce((sum, val) => sum + val, 0);
+        const subtotal = productAmounts.reduce((sum, val) => sum + val, 0);
+        
+        // Calculate fees (matching frontend calculation)
+        const deliveryFee = 30; // COD delivery fee
+        const tax = Math.floor(subtotal * 0.05); // 5% tax
+        const totalAmount = subtotal + deliveryFee + tax;
 
-        // Add 5% tax
-        amount += Math.floor(amount * 0.05);
+        // console.log("Order calculation:", { subtotal, deliveryFee, tax, totalAmount });  
 
-        await Order.create({
+        const newOrder = await Order.create({
             userId,
             items,
-            amount,
+            amount: totalAmount,
             address,
             paymentType: "Cash On Delivery",
             isPaid: false,
         });
+
+        // console.log("Order created successfully:", newOrder._id);
+
+        // Create notification for the admin seller
+        try {
+            await createOrderNotification(newOrder);
+            console.log("Notification created for admin seller");
+        } catch (notificationError) {
+            console.error("Failed to create notification:", notificationError);
+            // Don't fail the order if notification fails
+        }
 
         res.status(200).json({ message: "Order Placed Successfully" });
     } catch (error) {
@@ -73,13 +94,13 @@ export const placeOrderOnline = async (req, res) => {
 export const getUserOrder = async (req, res) => {
     try {
         const userId = req.userId;
-        const orders = await Order.find({
-            userId,
-            $or: [{ paymentType: "Cash On Delivery" }, { isPaid: false }],
-        })
-            .populate("items.product address")
+        // console.log("Fetching orders for user:", userId);
+        
+        const orders = await Order.find({ userId })
+            .populate("items.product")
             .sort({ createdAt: -1 });
 
+        // console.log("Found orders:", orders.length);
         res.status(200).json({ orders });
     } catch (error) {
         console.error("Error in getting user orders:", error.message);
@@ -93,7 +114,7 @@ export const getSellerOrder = async (req, res) => {
         const orders = await Order.find({
             $or: [{ paymentType: "Cash On Delivery" }, { isPaid: true }],
         })
-            .populate("items.product address")
+            .populate("items.product")
             .sort({ createdAt: -1 });
 
         res.status(200).json({ orders });

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useAppContext } from '../context/AppContext'
 import { NavLink, Outlet } from "react-router-dom";
 import NavLogo from "../assets/nav-log0.svg"
@@ -6,7 +6,30 @@ import toast from "react-hot-toast";
 import axios from "axios";
 
 const SellerDashboard = () => {
-  const { isSeller, setisSeller, navigate } = useAppContext()
+  const { isSeller, setisSeller, navigate, axios } = useAppContext()
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  // Fetch unread notifications count
+  const fetchUnreadCount = async () => {
+    try {
+      const response = await axios.get('/api/notifications?unreadOnly=true');
+      setUnreadCount(response.data.unreadCount || 0);
+    } catch (error) {
+      console.error('Failed to fetch unread notifications count:', error);
+    }
+  };
+
+  // Fetch unread count on component mount and periodically
+  useEffect(() => {
+    if (isSeller) {
+      fetchUnreadCount();
+      
+      // Set up polling for new notifications every 30 seconds
+      const interval = setInterval(fetchUnreadCount, 30000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [isSeller]);
 
   const dashboardIcon = (
     <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none">
@@ -26,10 +49,17 @@ const SellerDashboard = () => {
     </svg>
   );
 
+  const notificationIcon = (
+    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none">
+      <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5.365V3m0 2.365a5.338 5.338 0 0 1 5.133 5.368v1.8c0 2.386 1.867 2.982 1.867 4.175C19 17.4 19 18 18.462 18H5.538C5 18 5 17.4 5 16.708c0-1.193 1.867-1.789 1.867-4.175v-1.8A5.338 5.338 0 0 1 12 5.365ZM8.5 18c.35.654.98 1.5 2 1.5s1.65-.846 2-1.5" />
+    </svg>
+  );
+
   const sidebarLinks = [
     { name: "Add New Product", path: "/seller/add-product", icon: dashboardIcon },
     { name: "Overview", path: "/seller/product-list", icon: overviewIcon },
     { name: "Orders", path: "/seller/orders", icon: chatIcon },
+    { name: "Notifications", path: "/seller/notifications", icon: notificationIcon },
   ];
 
   const logout = async () => {
@@ -70,14 +100,30 @@ const SellerDashboard = () => {
             <NavLink
               to={item.path}
               key={item.name} end={item.path === "/seller"}
-              className={({ isActive }) => `flex items-center py-3 px-4 gap-3 
+              className={({ isActive }) => `flex items-center py-3 px-4 gap-3 relative
               ${isActive
                   ? "border-r-[6px] bg-primary/10 border-primary text-primary"
                   : "hover:bg-secondary-hover border-white text-text"
                 }`}
             >
-              {item.icon}
-              <p className="md:block hidden">{item.name}</p>
+              <div className="relative">
+                {item.icon}
+                {/* Notification badge */}
+                {item.name === "Notifications" && unreadCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
+              </div>
+              <div className="md:flex hidden items-center gap-2">
+                <p>{item.name}</p>
+                {/* Desktop notification badge */}
+                {item.name === "Notifications" && unreadCount > 0 && (
+                  <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5 font-medium">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
+              </div>
             </NavLink>
           ))}
         </div>

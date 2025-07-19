@@ -10,6 +10,7 @@ import productRoute from './routes/productRoute.js'
 import cartRoute from './routes/cartRoute.js'
 import addressRoute from './routes/addressRoute.js'
 import OrdersRoute from './routes/OrdersRoute.js'
+import notificationRoute from './routes/notificationRoute.js'
 import paymentRouter from './routes/paymentRoute.js'
 import devRoute from './routes/devRoute.js'
 import testRoute from './routes/testRoute.js'
@@ -54,6 +55,9 @@ app.use('/api/address', addressRoute)
 
 // Order Route
 app.use('/api/order', OrdersRoute)
+
+// Notification Route
+app.use('/api/notifications', notificationRoute)
 
 // Payment Route
 app.use('/api/payment', paymentRouter);

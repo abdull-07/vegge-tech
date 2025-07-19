@@ -7,7 +7,15 @@ const orderSchema = new mongoose.Schema({
         quantity: { type: Number, required: true }
     }],
     amount: { type: Number, required: true },
-    address: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "Address" },
+    address: {
+        firstName: { type: String, required: true },
+        lastName: { type: String, required: true },
+        streetAddress: { type: String, required: true },
+        phoneNumber: { type: String, required: true },
+        city: { type: String, required: true },
+        state: { type: String, required: true },
+        zipCode: { type: String, required: true }
+    },
     status: { type: String, default: 'Order Placed' },
     paymentType: { type: String, required: true },
     isPaid: { type: Boolean, required: true, default: false },

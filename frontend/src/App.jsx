@@ -9,6 +9,7 @@ import SellerWelcome from './components/SellerWelcome'
 import AddProduct from './components/AddProduct'
 import ProductList from './components/ProductList'
 import Orders from './components/Orders'
+import Notifications from './components/Notifications'
 import SellerDashbord from './pages/SellerDashobrd'
 import Footer from './components/Footer'
 import Home from './pages/Home'
@@ -53,6 +54,7 @@ function App() {
               <Route path="add-product" element={<AddProduct />} />
               <Route path="product-list" element={<ProductList />} />
               <Route path="orders" element={<Orders />} />
+              <Route path="notifications" element={<Notifications />} />
             </Route>
             <Route path="/verify-email/:token" element={<VerifyEmail />} />
             <Route path="/resend-verification" element={<ResendVerification />} />

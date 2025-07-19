@@ -1,64 +1,124 @@
 import React, { useState, useEffect } from 'react';
-import { orders } from '../assets/orders';
+import { useAppContext } from '../context/AppContext';
+import toast from 'react-hot-toast';
 
 const Orders = () => {
   const boxIcon = "https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/e-commerce/boxIcon.svg";
-  const [order, setOrder] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { axios } = useAppContext();
+
+  // Fetch all orders for seller
+  const fetchSellerOrders = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get('/api/order/seller');
+      setOrders(response.data.orders || []);
+      console.log("Seller orders fetched:", response.data.orders);
+    } catch (error) {
+      console.error('Failed to fetch seller orders:', error);
+      toast.error(error.response?.data?.message || 'Failed to load orders');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    setOrder(orders);
+    fetchSellerOrders();
   }, []);
+
+  if (loading) {
+    return (
+      <div className="md:p-10 p-4 space-y-4 bg-background-light min-h-screen">
+        <h2 className="text-xl font-semibold text-text">Orders List</h2>
+        <div className="flex justify-center items-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="md:p-10 p-4 space-y-4 bg-background-light min-h-screen">
-      <h2 className="text-xl font-semibold text-text">Orders List</h2>
-
-      {order.map((order, index) => (
-        <div
-          key={index}
-          className="flex flex-col md:grid md:grid-cols-[2fr_1fr_1fr_1fr] md:items-center gap-5 p-5 rounded-md border border-text-light/30 bg-white text-text-light shadow-sm w-full"
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold text-text">Orders List</h2>
+        <button
+          onClick={fetchSellerOrders}
+          className="px-4 py-2 bg-primary text-white rounded hover:bg-secondary transition text-sm"
         >
-          {/* Product Info */}
-          <div className="flex gap-5">
-            <img className="w-12 h-12 object-cover opacity-60" src={boxIcon} alt="boxIcon" />
-            <div className="flex flex-col justify-center">
-              {order.items.map((item, idx) => (
-                <p key={idx} className="font-medium text-text">
-                  {item.product.name}
-                  <span className={`text-primary ${item.quantity < 2 ? 'hidden' : ''}`}> × {item.quantity}</span>
+          Refresh Orders
+        </button>
+      </div>
+
+      {orders.length === 0 ? (
+        <div className="text-center py-20">
+          <img
+            className="w-24 h-24 mx-auto mb-4 opacity-50"
+            src={boxIcon}
+            alt="No orders"
+          />
+          <p className="text-gray-500 text-lg mb-4">No orders found.</p>
+          <p className="text-gray-400 text-sm">Orders will appear here when customers place them.</p>
+        </div>
+      ) : (
+        orders.map((order, index) => (
+          <div
+            key={order._id || index}
+            className="flex flex-col md:grid md:grid-cols-[2fr_1fr_1fr_1fr] md:items-center gap-5 p-5 rounded-md border border-text-light/30 bg-white text-text-light shadow-sm w-full"
+          >
+            {/* Product Info */}
+            <div className="flex gap-5">
+              <img className="w-12 h-12 object-cover opacity-60" src={boxIcon} alt="boxIcon" />
+              <div className="flex flex-col justify-center">
+                {order.items.map((item, idx) => (
+                  <p key={idx} className="font-medium text-text">
+                    {item.product?.name || 'Product Name'}
+                    <span className={`text-primary ${item.quantity < 2 ? 'hidden' : ''}`}> × {item.quantity}</span>
+                  </p>
+                ))}
+                <p className="text-xs text-gray-500 mt-1">
+                  Status: <span className="font-medium">{order.status}</span>
                 </p>
-              ))}
+              </div>
+            </div>
+
+            {/* Address */}
+            <div className="text-sm leading-5">
+              <p className="font-medium text-text mb-1">{order.address?.firstName} {order.address?.lastName}</p>
+              <p>
+                {order.address?.streetAddress}, {order.address?.city}, {order.address?.state}, {order.address?.zipCode}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                Phone: {order.address?.phoneNumber}
+              </p>
+            </div>
+
+            {/* Amount */}
+            <p className="font-medium text-base text-primary text-right md:text-left">Rs. {order.amount}</p>
+
+            {/* Payment Info */}
+            <div className="flex flex-col text-sm text-text-light leading-5">
+              <p>
+                <span className="font-medium text-text">Method:</span> {order.paymentType}
+              </p>
+              <p>
+                <span className="font-medium text-text">Date:</span>{" "}
+                {new Date(order.createdAt).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric'
+                })}
+              </p>
+              <p>
+                <span className="font-medium text-text">Payment:</span>{" "}
+                <span className={order.isPaid ? "text-green-600" : "text-red-600"}>
+                  {order.isPaid ? "Paid" : "Pending"}
+                </span>
+              </p>
             </div>
           </div>
-
-          {/* Address */}
-          <div className="text-sm leading-5">
-            <p className="font-medium text-text mb-1">{order.address.firstName} {order.address.lastName}</p>
-            <p>
-              {order.address.street}, {order.address.city}, {order.address.state}, {order.address.zipcode}, {order.address.country}
-            </p>
-          </div>
-
-          {/* Amount */}
-          <p className="font-medium text-base text-primary text-right md:text-left">Rs. {order.amount}</p>
-
-          {/* Payment Info */}
-          <div className="flex flex-col text-sm text-text-light leading-5">
-            <p>
-              <span className="font-medium text-text">Method:</span> {order.paymentType}
-            </p>
-            <p>
-              <span className="font-medium text-text">Date:</span> {order.orderDate}
-            </p>
-            <p>
-              <span className="font-medium text-text">Payment:</span>{" "}
-              <span className={order.isPaid ? "text-green-600" : "text-red-600"}>
-                {order.isPaid ? "Paid" : "Pending"}
-              </span>
-            </p>
-          </div>
-        </div>
-      ))}
+        ))
+      )}
     </div>
   );
 };
