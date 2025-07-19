@@ -28,18 +28,13 @@ const Cart = () => {
     "Civil Lines",
     "Satellite Town",
     "Gojra Road",
-    "Shorkot Cantt",
     "Ayub Chowk",
     "Chiniot Road",
-    "Waryam Wala",
-    "Kot Lakhnana",
-    "Garh Maharaja",
-    "Bhawana Road",
-    "Shah Jewana",
     "Jhang Sadar",
-    "Chak No. 18",
     "Shorkot Road",
-    "Mohala Hadri"
+    "Mohala Hadri",
+    "Milad Chowk",
+    "Mohala Purana Bag",
 
   ];
 
