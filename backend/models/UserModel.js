@@ -36,8 +36,12 @@ const userSchema = new mongoose.Schema({
     resetPasswordExpires: Date,
     lastLogin: Date,
     cartItem: [{ 
-        productId: { type: mongoose.Schema.Types.ObjectId, ref: "Products" }, 
-        quantity: { type: Number, default: 1 } 
+        productId: { type: mongoose.Schema.Types.ObjectId, ref: "Products", required: true }, 
+        quantity: { type: Number, default: 1, min: 1 },
+        // Optional fields for faster frontend rendering
+        name: { type: String },
+        price: { type: Number },
+        imageUrl: { type: String }
     }],
     // Address information
     addresses: [{

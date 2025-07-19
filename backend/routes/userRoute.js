@@ -10,7 +10,8 @@ import {
     resetPassword,
     updateProfile,
     changePassword,
-    addAddress, getAddresses, updateAddress, deleteAddress
+    addAddress, getAddresses, updateAddress, deleteAddress,
+    addToCart, updateCartItem, removeFromCart, getCart, clearCart
 } from "../controllers/userController.js";
 import userAuth from "../middlewares/userAuth.js";
 
@@ -39,5 +40,12 @@ router.post('/address', userAuth, addAddress);
 router.get('/addresses', userAuth, getAddresses);
 router.put('/address/:addressId', userAuth, updateAddress);
 router.delete('/address/:addressId', userAuth, deleteAddress);
+
+// Cart routes
+router.post('/cart/add', userAuth, addToCart);
+router.put('/cart/update', userAuth, updateCartItem);
+router.delete('/cart/remove', userAuth, removeFromCart);
+router.get('/cart', userAuth, getCart);
+router.delete('/cart/clear', userAuth, clearCart);
 
 export default router;

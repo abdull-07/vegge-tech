@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useAppContext } from "../context/AppContext";
 import toast from "react-hot-toast";
 const Cart = () => {
-  const { navigate, products, cartItems, updateCart, removeProductFromCart, getTotalCartItems, getTotalCartPrice, user, axios } = useAppContext();
+  const { navigate, products, cartItems, updateCart, removeProductFromCart, getTotalCartItems, getTotalCartPrice, user, axios, clearCart } = useAppContext();
 
   const [cartProducts, setCartProducts] = useState([])
   const [addresses, setAddresses] = useState([]);
@@ -35,7 +35,6 @@ const Cart = () => {
     "Mohala Hadri",
     "Milad Chowk",
     "Mohala Purana Bag",
-
   ];
 
   // Fetch user addresses
@@ -166,6 +165,9 @@ const Cart = () => {
         address: selectedAddress,
         payment: "Cash on Delivery",
       });
+
+      // Clear the cart after successful order
+      await clearCart();
 
       toast.success("Order placed successfully! We’ll deliver your items in 60 mints.");
       navigate("/"); // Or navigate to an "Order Placed" page
