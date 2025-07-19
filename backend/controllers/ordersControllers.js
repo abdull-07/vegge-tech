@@ -48,7 +48,7 @@ export const placeOrderCOD = async (req, res) => {
         // Create notification for the admin seller
         try {
             await createOrderNotification(newOrder);
-            console.log("Notification created for admin seller");
+            // console.log("Notification created for admin seller");
         } catch (notificationError) {
             console.error("Failed to create notification:", notificationError);
             // Don't fail the order if notification fails
