@@ -11,6 +11,8 @@ import cartRoute from './routes/cartRoute.js'
 import addressRoute from './routes/addressRoute.js'
 import OrdersRoute from './routes/OrdersRoute.js'
 import paymentRouter from './routes/paymentRoute.js'
+import devRoute from './routes/devRoute.js'
+import testRoute from './routes/testRoute.js'
 // import 'dotenv/config'
 
 // !.env config
@@ -55,6 +57,9 @@ app.use('/api/order', OrdersRoute)
 
 // Payment Route
 app.use('/api/payment', paymentRouter);
+
+// Test Route for email verification
+app.use('/api/test', testRoute);
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)

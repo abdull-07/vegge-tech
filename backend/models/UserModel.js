@@ -6,10 +6,10 @@ const userSchema = new mongoose.Schema({
         type: String, 
         required: true, 
         trim: true,
-        minlength: [2, 'Name must be at least 2 characters long'],
+        minlength: [3, 'Name must be at least 3 characters long'],
         maxlength: [50, 'Name must be less than 50 characters']
     },
-    email: { 
+    email: {
         type: String, 
         required: true, 
         unique: true, 
@@ -38,6 +38,17 @@ const userSchema = new mongoose.Schema({
     cartItem: [{ 
         productId: { type: mongoose.Schema.Types.ObjectId, ref: "Products" }, 
         quantity: { type: Number, default: 1 } 
+    }],
+    // Address information
+    addresses: [{
+        firstName: { type: String, trim: true },
+        lastName: { type: String, trim: true },
+        streetAddress: { type: String, trim: true },
+        phoneNumber: { type: String, trim: true },
+        city: { type: String, trim: true },
+        state: { type: String, trim: true },
+        zipCode: { type: String, trim: true },
+        isDefault: { type: Boolean, default: false }
     }],
     role: {
         type: String,

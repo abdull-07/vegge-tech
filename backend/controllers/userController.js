@@ -1,6 +1,7 @@
 import User from "../models/UserModel.js"
 import { generateToken } from "../utils/generateToken.js"
 import { validateEmail, validatePassword, validateName } from "../utils/emailValidator.js"
+import { sendVerificationEmail, sendPasswordResetEmail } from "../utils/emailService.js"
 import crypto from 'crypto'
 
 
@@ -53,9 +54,30 @@ export const registerUser = async (req, res) => {
             verificationExpires: tokenExpiry
         })
 
-        // TODO: Send verification email with token
-        // This would typically be implemented with an email service like SendGrid, Mailgun, etc.
-        // For now, we'll skip the actual email sending and just generate the token
+        // Send verification email
+        try {
+            await sendVerificationEmail(
+                newUser.email,
+                newUser.name,
+                verificationToken
+            );
+            console.log(`Verification email sent to ${newUser.email}`);
+        } catch (emailError) {
+            console.error("Error sending verification email:", emailError);
+            // Log the error but don't fail the registration
+            // We'll still create the user but warn about the email issue
+            return res.status(201).json({
+                message: "User registered successfully, but there was an issue sending the verification email. Please use the 'Resend verification email' option.",
+                emailError: true,
+                token,
+                user: {
+                    _id: newUser._id,
+                    name: newUser.name,
+                    email: newUser.email,
+                    isVerified: newUser.isVerified
+                }
+            });
+        }
 
         // Generate token for user
         const token = generateToken(newUser._id)
@@ -200,23 +222,68 @@ export const verifyEmail = async (req, res) => {
             return res.status(400).json({ message: "Verification token is required" });
         }
         
-        // Find user with the verification token
-        const user = await User.findOne({ 
-            verificationToken: token,
-            verificationExpires: { $gt: Date.now() } // Check if token hasn't expired
-        });
+        console.log(`Attempting to verify email with token: ${token}`);
+        
+        // Find user with the verification token - without expiry check first
+        const user = await User.findOne({ verificationToken: token });
         
         if (!user) {
+            console.log(`No user found with token: ${token}`);
             return res.status(400).json({ 
-                message: "Invalid or expired verification token. Please request a new verification email." 
+                message: "Invalid verification token. Please request a new verification email." 
             });
         }
+        
+        console.log(`User found: ${user.email}, Token expiry: ${user.verificationExpires}`);
+        
+        // Now check if token is expired
+        if (user.verificationExpires) {
+            const tokenExpiry = new Date(user.verificationExpires);
+            const now = new Date();
+            
+            console.log(`Token expiry check: Expiry=${tokenExpiry.toISOString()}, Now=${now.toISOString()}`);
+            
+            if (tokenExpiry < now) {
+                console.log('Token has expired');
+                
+                // Generate a new token for the user
+                const newVerificationToken = crypto.randomBytes(32).toString('hex');
+                const newTokenExpiry = new Date();
+                newTokenExpiry.setHours(newTokenExpiry.getHours() + 24); // Token valid for 24 hours
+                
+                // Update user with new token
+                user.verificationToken = newVerificationToken;
+                user.verificationExpires = newTokenExpiry;
+                await user.save();
+                
+                // Send a new verification email
+                try {
+                    await sendVerificationEmail(
+                        user.email,
+                        user.name,
+                        newVerificationToken
+                    );
+                    console.log(`New verification email sent to ${user.email}`);
+                } catch (emailError) {
+                    console.error("Error sending new verification email:", emailError);
+                }
+                
+                return res.status(400).json({ 
+                    message: "Verification token has expired. A new verification email has been sent to your email address." 
+                });
+            }
+        }
+        
+        // If we get here, the token is valid and not expired
+        console.log(`Verifying user: ${user.email}`);
         
         // Update user as verified
         user.isVerified = true;
         user.verificationToken = undefined;
         user.verificationExpires = undefined;
         await user.save();
+        
+        console.log(`User ${user.email} verified successfully`);
         
         return res.status(200).json({ 
             message: "Email verified successfully! You can now login with your credentials." 
@@ -268,8 +335,22 @@ export const resendVerification = async (req, res) => {
         user.verificationExpires = tokenExpiry;
         await user.save();
         
-        // TODO: Send verification email with token
-        // This would typically be implemented with an email service
+        // Send verification email
+        try {
+            await sendVerificationEmail(
+                user.email,
+                user.name,
+                verificationToken
+            );
+            console.log(`Verification email resent to ${user.email}`);
+        } catch (emailError) {
+            console.error("Error sending verification email:", emailError);
+            // Return specific error for email sending failure
+            return res.status(500).json({ 
+                message: "Failed to send verification email. Please try again later.",
+                emailError: true
+            });
+        }
         
         return res.status(200).json({ 
             message: "If your email exists in our system, a verification link will be sent to your inbox." 
@@ -316,8 +397,22 @@ export const forgotPassword = async (req, res) => {
         user.resetPasswordExpires = resetExpiry;
         await user.save();
         
-        // TODO: Send password reset email with token
-        // This would typically be implemented with an email service
+        // Send password reset email
+        try {
+            await sendPasswordResetEmail(
+                user.email,
+                user.name,
+                resetToken
+            );
+            console.log(`Password reset email sent to ${user.email}`);
+        } catch (emailError) {
+            console.error("Error sending password reset email:", emailError);
+            // Return specific error for email sending failure
+            return res.status(500).json({ 
+                message: "Failed to send password reset email. Please try again later.",
+                emailError: true
+            });
+        }
         
         return res.status(200).json({ 
             message: "If your email exists in our system, a password reset link will be sent to your inbox." 
@@ -370,4 +465,301 @@ export const resetPassword = async (req, res) => {
         console.error("Reset password error:", error.message);
         return res.status(500).json({ message: "Something went wrong, please try again later." });
     }
-}
+}// U
+// pdate user profile
+// /api/user/update-profile
+export const updateProfile = async (req, res) => {
+    try {
+        const { name } = req.body;
+        
+        if (!req.userId) {
+            return res.status(401).json({ message: "Not authenticated" });
+        }
+        
+        // Validate name
+        if (name) {
+            const nameValidation = validateName(name);
+            if (!nameValidation.isValid) {
+                return res.status(400).json({ message: nameValidation.message });
+            }
+        }
+        
+        // Find user by ID
+        const user = await User.findById(req.userId);
+        
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        
+        // Update user fields
+        if (name) user.name = name.trim();
+        
+        // Save updated user
+        await user.save();
+        
+        // Return updated user without password
+        const updatedUser = {
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            isVerified: user.isVerified,
+            role: user.role
+        };
+        
+        return res.status(200).json({ 
+            message: "Profile updated successfully", 
+            user: updatedUser 
+        });
+    } catch (error) {
+        console.error("Update profile error:", error.message);
+        return res.status(500).json({ message: "Something went wrong, please try again later." });
+    }
+};
+
+// Change user password
+// /api/user/change-password
+export const changePassword = async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        
+        if (!req.userId) {
+            return res.status(401).json({ message: "Not authenticated" });
+        }
+        
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ message: "Current password and new password are required" });
+        }
+        
+        // Validate new password strength
+        const passwordValidation = validatePassword(newPassword);
+        if (!passwordValidation.isValid) {
+            return res.status(400).json({ message: passwordValidation.message });
+        }
+        
+        // Find user by ID
+        const user = await User.findById(req.userId);
+        
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        
+        // Verify current password
+        const isPasswordMatch = await user.matchPassword(currentPassword);
+        if (!isPasswordMatch) {
+            return res.status(401).json({ message: "Current password is incorrect" });
+        }
+        
+        // Update password
+        user.password = newPassword;
+        await user.save();
+        
+        return res.status(200).json({ message: "Password changed successfully" });
+    } catch (error) {
+        console.error("Change password error:", error.message);
+        return res.status(500).json({ message: "Something went wrong, please try again later." });
+    }
+};//
+//  Add a new address for the user
+// /api/user/address
+export const addAddress = async (req, res) => {
+    try {
+        if (!req.userId) {
+            return res.status(401).json({ message: "Not authenticated" });
+        }
+
+        const { firstName, lastName, streetAddress, phoneNumber, city, state, zipCode, isDefault } = req.body;
+
+        // Basic validation
+        if (!firstName || !lastName || !streetAddress || !phoneNumber || !city || !state || !zipCode) {
+            return res.status(400).json({ message: "All address fields are required" });
+        }
+
+        // Find user by ID
+        const user = await User.findById(req.userId);
+        
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Create new address object
+        const newAddress = {
+            firstName,
+            lastName,
+            streetAddress,
+            phoneNumber,
+            city,
+            state,
+            zipCode,
+            isDefault: isDefault || false
+        };
+
+        // If this is the first address or set as default, update other addresses
+        if (isDefault || user.addresses.length === 0) {
+            // Set all existing addresses to non-default
+            user.addresses.forEach(address => {
+                address.isDefault = false;
+            });
+            
+            // Set the new address as default
+            newAddress.isDefault = true;
+        }
+
+        // Add the new address to the user's addresses array
+        user.addresses.push(newAddress);
+        
+        // Save the updated user
+        await user.save();
+        
+        return res.status(201).json({
+            message: "Address added successfully",
+            address: newAddress,
+            addresses: user.addresses
+        });
+    } catch (error) {
+        console.error("Add address error:", error.message);
+        return res.status(500).json({ message: "Something went wrong, please try again later." });
+    }
+};
+
+// Get all addresses for the user
+// /api/user/addresses
+export const getAddresses = async (req, res) => {
+    try {
+        if (!req.userId) {
+            return res.status(401).json({ message: "Not authenticated" });
+        }
+
+        // Find user by ID
+        const user = await User.findById(req.userId);
+        
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        
+        return res.status(200).json({
+            addresses: user.addresses || []
+        });
+    } catch (error) {
+        console.error("Get addresses error:", error.message);
+        return res.status(500).json({ message: "Something went wrong, please try again later." });
+    }
+};
+
+// Update an address
+// /api/user/address/:addressId
+export const updateAddress = async (req, res) => {
+    try {
+        if (!req.userId) {
+            return res.status(401).json({ message: "Not authenticated" });
+        }
+
+        const { addressId } = req.params;
+        const { firstName, lastName, streetAddress, phoneNumber, city, state, zipCode, isDefault } = req.body;
+
+        // Basic validation
+        if (!firstName || !lastName || !streetAddress || !phoneNumber || !city || !state || !zipCode) {
+            return res.status(400).json({ message: "All address fields are required" });
+        }
+
+        // Find user by ID
+        const user = await User.findById(req.userId);
+        
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Find the address to update
+        const addressIndex = user.addresses.findIndex(addr => addr._id.toString() === addressId);
+        
+        if (addressIndex === -1) {
+            return res.status(404).json({ message: "Address not found" });
+        }
+
+        // Update the address
+        user.addresses[addressIndex] = {
+            ...user.addresses[addressIndex].toObject(),
+            firstName,
+            lastName,
+            streetAddress,
+            phoneNumber,
+            city,
+            state,
+            zipCode,
+            isDefault: isDefault || false
+        };
+
+        // If set as default, update other addresses
+        if (isDefault) {
+            // Set all other addresses to non-default
+            user.addresses.forEach((address, index) => {
+                if (index !== addressIndex) {
+                    address.isDefault = false;
+                }
+            });
+            
+            // Ensure this address is default
+            user.addresses[addressIndex].isDefault = true;
+        }
+
+        // Save the updated user
+        await user.save();
+        
+        return res.status(200).json({
+            message: "Address updated successfully",
+            address: user.addresses[addressIndex],
+            addresses: user.addresses
+        });
+    } catch (error) {
+        console.error("Update address error:", error.message);
+        return res.status(500).json({ message: "Something went wrong, please try again later." });
+    }
+};
+
+// Delete an address
+// /api/user/address/:addressId
+export const deleteAddress = async (req, res) => {
+    try {
+        if (!req.userId) {
+            return res.status(401).json({ message: "Not authenticated" });
+        }
+
+        const { addressId } = req.params;
+
+        // Find user by ID
+        const user = await User.findById(req.userId);
+        
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Find the address to delete
+        const addressIndex = user.addresses.findIndex(addr => addr._id.toString() === addressId);
+        
+        if (addressIndex === -1) {
+            return res.status(404).json({ message: "Address not found" });
+        }
+
+        // Check if this was the default address
+        const wasDefault = user.addresses[addressIndex].isDefault;
+
+        // Remove the address
+        user.addresses.splice(addressIndex, 1);
+
+        // If the deleted address was the default and there are other addresses,
+        // set the first remaining address as default
+        if (wasDefault && user.addresses.length > 0) {
+            user.addresses[0].isDefault = true;
+        }
+
+        // Save the updated user
+        await user.save();
+        
+        return res.status(200).json({
+            message: "Address deleted successfully",
+            addresses: user.addresses
+        });
+    } catch (error) {
+        console.error("Delete address error:", error.message);
+        return res.status(500).json({ message: "Something went wrong, please try again later." });
+    }
+};

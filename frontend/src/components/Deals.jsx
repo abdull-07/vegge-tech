@@ -3,12 +3,12 @@ import { useAppContext } from "../context/AppContext";
 import ProductCard from "./ProductCard";
 import { Link } from "react-router-dom";
 
-const Deals = ({ limit = 4, showViewAll = true }) => {
+const Deals = ({ limit = 8, showViewAll = true }) => {
   const { products } = useAppContext();
 
   // Filter bundles with inStock true
   const dealBundles = (products.bundles || []).filter(product => product.inStock);
-  
+
   // Limit to specified number of bundles for homepage
   const limitedBundles = dealBundles.slice(0, limit);
 
@@ -26,11 +26,11 @@ const Deals = ({ limit = 4, showViewAll = true }) => {
               <ProductCard key={product._id} product={product} />
             ))}
           </div>
-          
+
           {showViewAll && dealBundles.length > limit && (
             <div className="text-center mt-8">
-              <Link 
-                to="/deals-offers" 
+              <Link
+                to="/deals-offers"
                 className="inline-block px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
               >
                 View All Bundles

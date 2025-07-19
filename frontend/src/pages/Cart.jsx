@@ -1,26 +1,48 @@
 import React, { useState, useEffect } from "react";
 import { useAppContext } from "../context/AppContext";
-import { users } from "../assets/users";
 import toast from "react-hot-toast";
 const Cart = () => {
-  const { navigate, products, cartItems, updateCart, removeProductFromCart, getTotalCartItems, getTotalCartPrice } = useAppContext();
+  const { navigate, products, cartItems, updateCart, removeProductFromCart, getTotalCartItems, getTotalCartPrice, user, axios } = useAppContext();
 
   const [cartProducts, setCartProducts] = useState([])
-  // const [showAddress, setShowAddress] = useState(false);
-  const [addresses, setAddresses] = useState(users.map(u => u.address));
-  const [selectedAddress, setSelectedAddress] = useState(addresses[0]);
+  const [addresses, setAddresses] = useState([]);
+  const [selectedAddress, setSelectedAddress] = useState(null);
   const [showAddressDropdown, setShowAddressDropdown] = useState(false);
   const [showNewAddressForm, setShowNewAddressForm] = useState(false);
   const [newAddress, setNewAddress] = useState({
     firstName: "",
     lastName: "",
     street: "",
+    phone: "",
     city: "",
     state: "",
     zipcode: ""
   });
 
   const [paymentOption, setPaymentOption] = useState("COD");
+
+  // Fetch user addresses
+  const fetchUserAddresses = async () => {
+    if (!user) return;
+    
+    try {
+      const response = await axios.get('/api/user/addresses');
+      const userAddresses = response.data.addresses || [];
+      setAddresses(userAddresses);
+      
+      // Set the default address as selected
+      const defaultAddress = userAddresses.find(addr => addr.isDefault);
+      if (defaultAddress) {
+        setSelectedAddress(defaultAddress);
+      } else if (userAddresses.length > 0) {
+        setSelectedAddress(userAddresses[0]);
+      }
+    } catch (error) {
+      console.error('Failed to fetch addresses:', error);
+      // If user doesn't have addresses or API fails, use empty array
+      setAddresses([]);
+    }
+  };
 
   // Function to show the cart items on cart Page
   const getCartItem = () => {
@@ -30,7 +52,7 @@ const Cart = () => {
     const allProducts = [
       ...(products.fruits || []),
       ...(products.vegetables || []),
-      ...(products.deals || [])
+      ...(products.bundles || [])
     ];
 
     for (const key in cartItems) {
@@ -46,12 +68,17 @@ const Cart = () => {
 
   useEffect(() => {
     if (
-      (products.fruits?.length > 0 || products.vegetables?.length > 0 || products.deals?.length > 0) &&
+      (products.fruits?.length > 0 || products.vegetables?.length > 0 || products.bundles?.length > 0) &&
       Object.keys(cartItems).length > 0
     ) {
       getCartItem();
     }
   }, [products, cartItems]);
+
+  // Fetch user addresses when component mounts or user changes
+  useEffect(() => {
+    fetchUserAddresses();
+  }, [user]);
 
   // handle the product quantituy
   const handleQuantityChange = (id, newQuantity) => {
@@ -71,12 +98,12 @@ const Cart = () => {
 
   // Convert address object to array of formatted strings
   const formatAddress = (addr) =>
-    `${addr.firstName || ''} ${addr.lastName || ''}, ${addr.street}, ${addr.phone}, ${addr.city}, ${addr.state}, ${addr.zipcode}`;
+    `${addr.firstName || ''} ${addr.lastName || ''}, ${addr.streetAddress || addr.street || ''}, ${addr.phoneNumber || addr.phone || ''}, ${addr.city}, ${addr.state}, ${addr.zipCode || addr.zipcode || ''}`;
 
   // Payment Handler function
   const handlePlaceOrder = async () => {
     if (!selectedAddress) {
-      toast.dismiss("Please select a delivery address.");
+      toast.error("Please select a delivery address.");
       return;
     }
 
@@ -99,14 +126,13 @@ const Cart = () => {
   };
 
   return (
-    (products.fruits?.length > 0 || products.vegetables?.length > 0 || products.deals?.length > 0)
-    && Object.keys(cartItems).length > 0
-  ) ? (
+    ((products.fruits?.length > 0 || products.vegetables?.length > 0 || products.bundles?.length > 0)
+    && Object.keys(cartItems).length > 0) ? (
     <div className="flex flex-col md:flex-row py-16 max-w-6xl w-full px-6 mx-auto">
       {/* LEFT SIDE – Cart Items */}
       <div className="flex-1 max-w-4xl">
         <h1 className="text-3xl font-medium mb-6 text-text">
-          Shopping Cart <span className="text-sm text-primary">{getTotalCartItems()}Items</span>
+          Shopping Cart <span className="text-sm text-primary">({getTotalCartItems()} Items)</span>
         </h1>
 
         <div className="grid grid-cols-[2fr_1fr_1fr] text-text-light text-base font-medium pb-3">
@@ -162,7 +188,10 @@ const Cart = () => {
           </div>
         ))}
 
-        <button className="group cursor-pointer flex items-center mt-8 gap-2 text-primary font-medium">
+        <button 
+          onClick={() => navigate("/all-products")}
+          className="group cursor-pointer flex items-center mt-8 gap-2 text-primary font-medium hover:text-primary-dark transition"
+        >
           <svg width="15" height="11" viewBox="0 0 15 11" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M14.09 5.5H1M6.143 10 1 5.5 6.143 1"
               stroke="var(--primary)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -253,18 +282,49 @@ const Cart = () => {
       <h2 className="text-xl font-semibold mb-4 text-text">Add New Address</h2>
 
       <form
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault();
           const isValid = Object.values(newAddress).every(val => val.trim() !== "");
           if (!isValid) {
             toast.error("Please fill all fields");
             return;
           }
-          setAddresses(prev => [...prev, newAddress]);
-          setSelectedAddress(newAddress);
-          setNewAddress({ firstName: "", lastName: "", street: "", phone: "", city: "", state: "", zipcode: "" });
-          setShowNewAddressForm(false);
-          toast.success("Address added!");
+          
+          if (!user) {
+            toast.error("Please login to add an address");
+            return;
+          }
+          
+          try {
+            // Map the form data to match the backend API
+            const addressData = {
+              firstName: newAddress.firstName,
+              lastName: newAddress.lastName,
+              streetAddress: newAddress.street,
+              phoneNumber: newAddress.phone,
+              city: newAddress.city,
+              state: newAddress.state,
+              zipCode: newAddress.zipcode,
+              isDefault: addresses.length === 0 // Set as default if it's the first address
+            };
+            
+            const response = await axios.post('/api/user/address', addressData);
+            
+            // Update the addresses list with the response
+            setAddresses(response.data.addresses);
+            
+            // Set the newly added address as selected
+            const newAddressFromResponse = response.data.address;
+            setSelectedAddress(newAddressFromResponse);
+            
+            // Reset form and close modal
+            setNewAddress({ firstName: "", lastName: "", street: "", phone: "", city: "", state: "", zipcode: "" });
+            setShowNewAddressForm(false);
+            toast.success("Address added successfully!");
+          } catch (error) {
+            console.error('Failed to add address:', error);
+            toast.error(error.response?.data?.message || "Failed to add address");
+          }
         }}
         className="space-y-4"
       >
@@ -365,7 +425,7 @@ const Cart = () => {
         </button>
       </div>
 
-    );
+    ));
 };
 
 export default Cart;

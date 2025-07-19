@@ -32,13 +32,14 @@ const tempEmailDomains = [
     '7tags.com', '9ox.net', 'a-bc.net', 'afrobacon.com', 'ajaxapp.net'
 ];
 
-// List of fake/suspicious email patterns
+// List of fake/suspicious email patterns - only obvious test patterns
 const fakeEmailPatterns = [
-    /test.*@/i, /fake.*@/i, /dummy.*@/i, /sample.*@/i, /example.*@/i,
-    /noreply.*@/i, /donotreply.*@/i, /admin.*@/i, /info.*@/i,
-    /^[a-z]{1,3}@/i, // Very short usernames
-    /^\d+@/i, // Only numbers as username
-    /^[a-z]+\d{4,}@/i // Simple pattern + many numbers
+    /^test@/i,
+    /^fake@/i,
+    /^dummy@/i,
+    /^sample@/i,
+    /^example@/i
+    // Removed noreply and donotreply as they might be legitimate in some cases
 ];
 
 /**
@@ -69,7 +70,7 @@ export const validateEmail = async (email) => {
             };
         }
 
-        // Check for fake email patterns
+        // Check for fake email patterns - only check obvious test emails
         for (const pattern of fakeEmailPatterns) {
             if (pattern.test(lowerEmail)) {
                 return {
@@ -79,8 +80,8 @@ export const validateEmail = async (email) => {
             }
         }
 
-        // Check for suspicious patterns
-        if (username.length < 2) {
+        // Only check for very short usernames (single character)
+        if (username.length < 1) {
             return {
                 isValid: false,
                 message: 'Email username is too short. Please use a valid email address.'
@@ -96,37 +97,44 @@ export const validateEmail = async (email) => {
             };
         }
 
-        // Check if domain has valid MX records (DNS lookup)
+        // MX record check is now optional and won't block registration
+        // This is to avoid issues with valid domains that might have DNS resolution problems
         try {
-            // Wrap DNS lookup in a promise
-            const checkMxRecords = () => {
-                return new Promise((resolve, reject) => {
-                    dns.resolveMx(domain, (err, addresses) => {
-                        if (err) {
-                            // DNS error or no MX records
-                            reject(err);
-                        } else if (addresses && addresses.length > 0) {
-                            // Valid MX records found
-                            resolve(true);
-                        } else {
-                            // No MX records
-                            resolve(false);
-                        }
+            // Only perform MX check for domains that aren't common email providers
+            const commonEmailProviders = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'aol.com', 'icloud.com', 'protonmail.com', 'mail.com'];
+
+            if (!commonEmailProviders.includes(domain)) {
+                // Wrap DNS lookup in a promise
+                const checkMxRecords = () => {
+                    return new Promise((resolve, reject) => {
+                        dns.resolveMx(domain, (err, addresses) => {
+                            if (err) {
+                                // DNS error or no MX records
+                                reject(err);
+                            } else if (addresses && addresses.length > 0) {
+                                // Valid MX records found
+                                resolve(true);
+                            } else {
+                                // No MX records
+                                resolve(false);
+                            }
+                        });
                     });
-                });
-            };
-            
-            const hasMxRecords = await checkMxRecords();
-            if (!hasMxRecords) {
-                return {
-                    isValid: false,
-                    message: 'Email domain does not have valid mail servers. Please use a valid email address.'
                 };
+
+                try {
+                    const hasMxRecords = await checkMxRecords();
+                    // Log the result but don't block registration
+                    if (!hasMxRecords) {
+                        console.log(`Warning: Domain ${domain} has no MX records, but allowing registration anyway`);
+                    }
+                } catch (innerDnsError) {
+                    console.log(`MX record check error for ${domain}:`, innerDnsError.message);
+                }
             }
         } catch (dnsError) {
             console.log('MX record check failed:', dnsError.message);
-            // We'll continue even if MX check fails to avoid blocking valid users
-            // in case of temporary DNS issues
+            // Continue regardless of DNS issues
         }
 
         return {

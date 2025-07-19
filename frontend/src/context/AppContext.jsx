@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { productsData } from "../assets/productsdata.js";
 import toast from "react-hot-toast";
 import axios from "axios";
 
@@ -61,7 +60,7 @@ export const AppContextProvider = ({ children }) => {
             toast.error(`Failed to load products: ${error.response?.data?.message || error.message}`);
             console.error("Product fetch error:", error);
             // Set empty categories to prevent undefined errors
-            setProducts({ fruits: [], vegetables: [], bundles: []  });
+            setProducts({ fruits: [], vegetables: [], bundles: [] });
         }
     }
 
@@ -99,25 +98,44 @@ export const AppContextProvider = ({ children }) => {
 
     useEffect(() => {
         const initializeApp = async () => {
-            // Check user authentication first
-            await checkUserAuth();
+            try {
+                // Check user authentication first
+                await checkUserAuth();
+            } catch (error) {
+                console.log("User auth check failed, continuing as guest");
+                setUser(null);
+                setAuthChecked(true);
+                setIsLoading(false);
+            }
             
-            // Then check seller authentication
-            await fetchSeller();
+            try {
+                // Then check seller authentication
+                await fetchSeller();
+            } catch (error) {
+                console.log("Seller auth check failed, continuing as regular user");
+                setisSeller(false);
+            }
             
-            // Finally fetch products
-            await fetchProducts();
+            try {
+                // Finally fetch products
+                await fetchProducts();
+            } catch (error) {
+                console.log("Product fetch failed, using empty product list");
+                setProducts({ fruits: [], vegetables: [], bundles: [] });
+            }
         };
-        
+
         initializeApp();
     }, []); // Empty dependency array means it runs once on component mount
-    
-    // Navigate to seller dashboard if user is a seller
+
+    // This effect was causing issues by redirecting to /seller repeatedly
+    // We only want to navigate to seller dashboard on initial authentication, not on every render
     useEffect(() => {
-        if (isSeller && authChecked) {
+        // Only redirect on initial authentication, not when already on a seller page
+        if (isSeller && authChecked && !window.location.pathname.includes('/seller')) {
             navigate("/seller");
         }
-    }, [isSeller, authChecked, navigate]);
+    }, [isSeller, authChecked]);
 
     // Calculate Total Cart items
     const getTotalCartItems = () => {
@@ -135,7 +153,7 @@ export const AppContextProvider = ({ children }) => {
         const allProducts = [
             ...(products.fruits || []),
             ...(products.vegetables || []),
-            ...(products.deals || [])
+            ...(products.bundles || [])
         ];
 
         for (const [itemId, quantity] of Object.entries(cartItems)) {
@@ -183,28 +201,28 @@ export const AppContextProvider = ({ children }) => {
 
     // get all the value of Context an used in return  blow
     const value = {
-        navigate, 
-        user, 
-        setUser, 
-        isSeller, 
-        setisSeller, 
-        showUserLogin, 
-        setShowUserLogin, 
-        products, 
-        setProducts, 
-        cartItems, 
-        addToCart, 
+        navigate,
+        user,
+        setUser,
+        isSeller,
+        setisSeller,
+        showUserLogin,
+        setShowUserLogin,
+        products,
+        setProducts,
+        cartItems,
+        addToCart,
         updateCart,
-        removeProductFromCart, 
-        seacrhQuery, 
-        setSeacrhQuery, 
-        reviews, 
-        setReviews, 
-        reviewForm, 
-        setReviewForm, 
-        getTotalCartItems, 
+        removeProductFromCart,
+        seacrhQuery,
+        setSeacrhQuery,
+        reviews,
+        setReviews,
+        reviewForm,
+        setReviewForm,
+        getTotalCartItems,
         getTotalCartPrice,
-        axios, 
+        axios,
         fetchSeller,
         checkUserAuth,
         logoutUser,
