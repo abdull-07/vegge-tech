@@ -21,6 +21,7 @@ const orderSchema = new mongoose.Schema({
     isPaid: { type: Boolean, required: true, default: false },
     paymentId: { type: String },          // e.g., Razorpay/Stripe transaction ID
     paymentStatus: { type: String },      // e.g., "success", "failed"
+    paidAt: { type: Date }                // When the order was marked as paid
 
 
 }, { timestamps: true })

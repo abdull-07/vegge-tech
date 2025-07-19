@@ -123,3 +123,38 @@ export const getSellerOrder = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error" });
     }
 };
+
+// /api/order/mark-paid/:orderId
+export const markOrderAsPaid = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+
+        if (!orderId) {
+            return res.status(400).json({ message: "Order ID is required" });
+        }
+
+        // Find and update the order
+        const order = await Order.findByIdAndUpdate(
+            orderId,
+            { 
+                isPaid: true,
+                paymentStatus: "success",
+                paidAt: new Date()
+            },
+            { new: true }
+        ).populate("items.product");
+
+        if (!order) {
+            return res.status(404).json({ message: "Order not found" });
+        }
+
+        console.log(`Order ${orderId} marked as paid`);
+        res.status(200).json({ 
+            message: "Order marked as paid successfully",
+            order 
+        });
+    } catch (error) {
+        console.error("Error marking order as paid:", error.message);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};

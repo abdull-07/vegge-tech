@@ -23,6 +23,29 @@ const Orders = () => {
     }
   };
 
+  // Mark order as paid
+  const markOrderAsPaid = async (orderId) => {
+    try {
+      const response = await axios.put(`/api/order/mark-paid/${orderId}`);
+      
+      if (response.data.message) {
+        // Update the local orders state
+        setOrders(prevOrders => 
+          prevOrders.map(order => 
+            order._id === orderId 
+              ? { ...order, isPaid: true, paymentStatus: 'success', paidAt: new Date() }
+              : order
+          )
+        );
+        
+        toast.success('Order marked as paid successfully!');
+      }
+    } catch (error) {
+      console.error('Failed to mark order as paid:', error);
+      toast.error(error.response?.data?.message || 'Failed to update payment status');
+    }
+  };
+
   useEffect(() => {
     fetchSellerOrders();
   }, []);
@@ -96,7 +119,7 @@ const Orders = () => {
             {/* Amount */}
             <p className="font-medium text-base text-primary text-right md:text-left">Rs. {order.amount}</p>
 
-            {/* Payment Info */}
+            {/* Payment Info & Actions */}
             <div className="flex flex-col text-sm text-text-light leading-5">
               <p>
                 <span className="font-medium text-text">Method:</span> {order.paymentType}
@@ -109,12 +132,27 @@ const Orders = () => {
                   day: 'numeric'
                 })}
               </p>
-              <p>
-                <span className="font-medium text-text">Payment:</span>{" "}
-                <span className={order.isPaid ? "text-green-600" : "text-red-600"}>
-                  {order.isPaid ? "Paid" : "Pending"}
-                </span>
-              </p>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="font-medium text-text">Payment:</span>
+                {order.isPaid ? (
+                  <span className="flex items-center gap-1 text-green-600">
+                    <span>✅</span>
+                    <span>Paid</span>
+                  </span>
+                ) : (
+                  <span className="text-red-600">Pending</span>
+                )}
+              </div>
+              
+              {/* Mark as Paid Button - Only show for COD orders that aren't paid */}
+              {order.paymentType === "Cash On Delivery" && !order.isPaid && (
+                <button
+                  onClick={() => markOrderAsPaid(order._id)}
+                  className="mt-3 px-3 py-1.5 bg-green-500 text-white text-xs rounded hover:bg-green-600 transition-colors duration-200 font-medium"
+                >
+                  Mark as Paid
+                </button>
+              )}
             </div>
           </div>
         ))
