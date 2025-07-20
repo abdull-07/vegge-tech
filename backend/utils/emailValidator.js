@@ -3,11 +3,20 @@ import dns from 'dns';
 
 // List of temporary/disposable email domains
 const tempEmailDomains = [
-    '10minutemail.com', 'guerrillamail.com', 'mailinator.com', 'tempmail.org',
-    'yopmail.com', 'temp-mail.org', 'throwaway.email', 'maildrop.cc',
+    // Common temp-mail.org domains
+    'forexru.com', 'temp-mail.org', 'tempmail.org', 'tempmailaddress.com',
+    'tempmailo.com', 'tempmail.net', 'tempmail.co', 'tempmail.io',
+
+    // Other major temporary email providers
+    '10minutemail.com', '10minutemail.net', '10minutemail.org',
+    'guerrillamail.com', 'guerrillamail.net', 'guerrillamail.org', 'guerrillamail.biz',
+    'mailinator.com', 'mailinator.net', 'mailinator.org',
+    'yopmail.com', 'yopmail.fr', 'yopmail.net',
+    'throwaway.email', 'throwawaymail.com', 'trashmail.com',
+    'maildrop.cc', 'maildrop.com', 'maildrop.net',
     'sharklasers.com', 'guerrillamailblock.com', 'pokemail.net', 'spam4.me',
-    'tempail.com', 'tempemail.com', 'tempinbox.com', 'throwawaymail.com',
-    'trashmail.com', 'dispostable.com', 'emailondeck.com', 'fakeinbox.com',
+    'tempail.com', 'tempemail.com', 'tempinbox.com', 'tempymail.com',
+    'dispostable.com', 'emailondeck.com', 'fakeinbox.com',
     'getnada.com', 'harakirimail.com', 'incognitomail.org', 'jetable.org',
     'mailcatch.com', 'mailnesia.com', 'mytrashmail.com', 'no-spam.ws',
     'noclickemail.com', 'nogmailspam.info', 'nomail.xl.cx', 'notmailinator.com',
@@ -18,7 +27,7 @@ const tempEmailDomains = [
     'spambog.de', 'spambog.ru', 'spamex.com', 'spamfree24.org', 'spamgourmet.com',
     'spamgourmet.net', 'spamgourmet.org', 'spamhole.com', 'spamify.com',
     'spammotel.com', 'spaml.com', 'spamspot.com', 'spamthis.co.uk', 'spamthisplease.com',
-    'speed.1s.fr', 'superrito.com', 'tempemail.net', 'tempymail.com',
+    'speed.1s.fr', 'superrito.com', 'tempemail.net',
     'thankyou2010.com', 'trash2009.com', 'trashdevil.com', 'trashymail.com',
     'tyldd.com', 'uggsrock.com', 'wegwerfmail.de', 'wegwerfmail.net',
     'wegwerfmail.org', 'wh4f.org', 'whyspam.me', 'willselfdestruct.com',
@@ -29,7 +38,26 @@ const tempEmailDomains = [
     '3d-painting.com', '4warding.com', '4warding.net', '4warding.org',
     '60minutemail.com', '675hosting.com', '675hosting.net', '675hosting.org',
     '6url.com', '75hosting.com', '75hosting.net', '75hosting.org',
-    '7tags.com', '9ox.net', 'a-bc.net', 'afrobacon.com', 'ajaxapp.net'
+    '7tags.com', '9ox.net', 'a-bc.net', 'afrobacon.com', 'ajaxapp.net',
+
+    // Additional temp-mail.org related domains
+    'emailfake.com', 'mohmal.com', 'tempmail.de', 'tempmail.plus',
+    'tempmail.altmails.com', 'tempmail.email', 'tempmail.ninja',
+    'tempmail.us.com', 'tempmail.click', 'tempmail.today',
+    'tempmail.live', 'tempmail.space', 'tempmail.site',
+
+    // More disposable email domains
+    'burnermail.io', 'guerrillamail.de', 'guerrillamail.info',
+    'mailtemp.info', 'tempmail.gq', 'tempmail.ml', 'tempmail.ga',
+    'tempmail.tk', 'tempmail.cf', 'tempmail.icu', 'tempmail.fun',
+    'tempmail.ltd', 'tempmail.tech', 'tempmail.world', 'tempmail.zone',
+    'tempmail.host', 'tempmail.store', 'tempmail.online', 'tempmail.website',
+
+    // Common patterns used by temp mail services
+    'emailtemp.org', 'tempemails.net', 'tempmails.net', 'tempemails.com',
+    'tempmails.com', 'tempemails.org', 'tempmails.org', 'tempemails.info',
+    'tempmails.info', 'tempemails.co', 'tempmails.co', 'tempemails.biz',
+    'tempmails.biz', 'tempemails.us', 'tempmails.us'
 ];
 
 // List of fake/suspicious email patterns - only obvious test patterns

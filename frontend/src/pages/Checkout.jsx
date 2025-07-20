@@ -18,7 +18,7 @@ function Checkout() {
     deliveryInstructions: '',
 
     // Payment Information
-    paymentMethod: 'card',
+    paymentMethod: 'jazzcash',
     cardNumber: '',
     expiryDate: '',
     cvv: '',
@@ -238,7 +238,7 @@ function Checkout() {
                           />
                           <div className="ml-3">
                             <div className="font-medium text-gray-800">Express Delivery</div>
-                            <div className="text-sm text-gray-600">30-60 minutes • $4.99</div>
+                            <div className="text-sm text-gray-600">30-60 minutes • Rs. 50</div>
                           </div>
                         </label>
                       </div>
@@ -265,144 +265,135 @@ function Checkout() {
                   <h2 className="text-xl font-semibold text-gray-800 mb-6">Payment Information</h2>
 
                   <div className="space-y-6">
-                    {/* Online Payment Methods */}
+                    {/* Pakistani Payment Methods */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-4">Select Payment Method</label>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <label className="flex items-center p-4 border-2 border-primary bg-primary/5 rounded-lg cursor-pointer hover:bg-primary/10 transition-colors">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <label className="flex items-center p-4 border-2 border-orange-500 bg-orange-50 rounded-lg cursor-pointer hover:bg-orange-100 transition-colors">
                           <input
                             type="radio"
                             name="paymentMethod"
-                            value="card"
-                            checked={formData.paymentMethod === 'card'}
+                            value="jazzcash"
+                            checked={formData.paymentMethod === 'jazzcash'}
                             onChange={handleInputChange}
-                            className="text-primary focus:ring-primary"
+                            className="text-orange-500 focus:ring-orange-500"
                           />
-                          <div className="ml-3">
-                            <div className="font-medium text-gray-800">Credit/Debit Card</div>
-                            <div className="text-sm text-gray-600">Visa, Mastercard, Amex</div>
+                          <div className="ml-3 flex items-center">
+                            <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center mr-3">
+                              <span className="text-white text-sm font-bold">JC</span>
+                            </div>
+                            <div>
+                              <div className="font-medium text-gray-800">JazzCash</div>
+                              <div className="text-sm text-gray-600">Mobile Wallet Payment</div>
+                            </div>
                           </div>
                         </label>
-                        <label className="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                        <label className="flex items-center p-4 border-2 border-green-600 bg-green-50 rounded-lg cursor-pointer hover:bg-green-100 transition-colors">
                           <input
                             type="radio"
                             name="paymentMethod"
-                            value="paypal"
-                            checked={formData.paymentMethod === 'paypal'}
+                            value="easypaisa"
+                            checked={formData.paymentMethod === 'easypaisa'}
                             onChange={handleInputChange}
-                            className="text-primary focus:ring-primary"
+                            className="text-green-600 focus:ring-green-600"
                           />
-                          <div className="ml-3">
-                            <div className="font-medium text-gray-800">PayPal</div>
-                            <div className="text-sm text-gray-600">Pay with PayPal</div>
-                          </div>
-                        </label>
-                        <label className="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                          <input
-                            type="radio"
-                            name="paymentMethod"
-                            value="digital"
-                            checked={formData.paymentMethod === 'digital'}
-                            onChange={handleInputChange}
-                            className="text-primary focus:ring-primary"
-                          />
-                          <div className="ml-3">
-                            <div className="font-medium text-gray-800">Digital Wallet</div>
-                            <div className="text-sm text-gray-600">Apple Pay, Google Pay</div>
+                          <div className="ml-3 flex items-center">
+                            <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center mr-3">
+                              <span className="text-white text-sm font-bold">EP</span>
+                            </div>
+                            <div>
+                              <div className="font-medium text-gray-800">Easypaisa</div>
+                              <div className="text-sm text-gray-600">Digital Payment Service</div>
+                            </div>
                           </div>
                         </label>
                       </div>
                     </div>
 
-                    {/* Card Payment Form */}
-                    {formData.paymentMethod === 'card' && (
-                      <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
-                        <h3 className="font-medium text-gray-800 mb-4">Card Details</h3>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Card Number</label>
-                          <input
-                            type="text"
-                            name="cardNumber"
-                            value={formData.cardNumber}
-                            onChange={handleInputChange}
-                            placeholder="1234 5678 9012 3456"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
-                            required
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
+                    {/* JazzCash Payment */}
+                    {formData.paymentMethod === 'jazzcash' && (
+                      <div className="p-6 bg-orange-50 border border-orange-200 rounded-lg">
+                        <div className="flex items-center mb-4">
+                          <div className="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center mr-4">
+                            <span className="text-white text-lg font-bold">JC</span>
+                          </div>
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Expiry Date</label>
+                            <h3 className="font-medium text-gray-800">JazzCash Payment</h3>
+                            <p className="text-sm text-gray-600">Pay securely using your JazzCash mobile wallet</p>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Mobile Number</label>
                             <input
-                              type="text"
-                              name="expiryDate"
-                              value={formData.expiryDate}
-                              onChange={handleInputChange}
-                              placeholder="MM/YY"
-                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+                              type="tel"
+                              name="jazzCashNumber"
+                              placeholder="03XX-XXXXXXX"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors"
                               required
                             />
                           </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">CVV</label>
-                            <input
-                              type="text"
-                              name="cvv"
-                              value={formData.cvv}
-                              onChange={handleInputChange}
-                              placeholder="123"
-                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
-                              required
-                            />
+                          
+                          <div className="bg-white p-4 rounded border border-orange-200">
+                            <div className="flex items-start space-x-3">
+                              <svg className="w-5 h-5 text-orange-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <div>
+                                <h4 className="text-sm font-medium text-gray-800 mb-1">Payment Instructions:</h4>
+                                <ul className="text-xs text-gray-600 space-y-1">
+                                  <li>• You will receive an SMS with payment details</li>
+                                  <li>• Follow the instructions to complete payment</li>
+                                  <li>• Payment will be processed within 2-3 minutes</li>
+                                </ul>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Cardholder Name</label>
-                          <input
-                            type="text"
-                            name="cardName"
-                            value={formData.cardName}
-                            onChange={handleInputChange}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
-                            required
-                          />
                         </div>
                       </div>
                     )}
 
-                    {/* PayPal Payment */}
-                    {formData.paymentMethod === 'paypal' && (
-                      <div className="p-6 bg-blue-50 rounded-lg text-center">
-                        <div className="text-blue-600 mb-4">
-                          <svg className="w-12 h-12 mx-auto" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.607-.541c-.013.076-.026.175-.041.26-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81.394.45.67.99.824 1.607z" />
-                          </svg>
-                        </div>
-                        <h3 className="font-medium text-gray-800 mb-2">PayPal Payment</h3>
-                        <p className="text-sm text-gray-600 mb-4">You will be redirected to PayPal to complete your payment securely.</p>
-                        <div className="bg-white p-3 rounded border">
-                          <p className="text-xs text-gray-500">Click "Place Order" to proceed to PayPal</p>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Digital Wallet Payment */}
-                    {formData.paymentMethod === 'digital' && (
-                      <div className="p-6 bg-gray-50 rounded-lg text-center">
-                        <div className="flex justify-center space-x-4 mb-4">
-                          <div className="w-12 h-8 bg-black rounded flex items-center justify-center">
-                            <span className="text-white text-xs font-bold">Pay</span>
+                    {/* Easypaisa Payment */}
+                    {formData.paymentMethod === 'easypaisa' && (
+                      <div className="p-6 bg-green-50 border border-green-200 rounded-lg">
+                        <div className="flex items-center mb-4">
+                          <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center mr-4">
+                            <span className="text-white text-lg font-bold">EP</span>
                           </div>
-                          <div className="w-12 h-8 bg-blue-500 rounded flex items-center justify-center">
-                            <span className="text-white text-xs font-bold">G</span>
+                          <div>
+                            <h3 className="font-medium text-gray-800">Easypaisa Payment</h3>
+                            <p className="text-sm text-gray-600">Pay securely using your Easypaisa account</p>
                           </div>
                         </div>
-                        <h3 className="font-medium text-gray-800 mb-2">Digital Wallet Payment</h3>
-                        <p className="text-sm text-gray-600 mb-4">Pay securely using Apple Pay or Google Pay</p>
-                        <div className="bg-white p-3 rounded border">
-                          <p className="text-xs text-gray-500">Your device will prompt for authentication</p>
+                        
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Mobile Number</label>
+                            <input
+                              type="tel"
+                              name="easypaisaNumber"
+                              placeholder="03XX-XXXXXXX"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-colors"
+                              required
+                            />
+                          </div>
+                          
+                          <div className="bg-white p-4 rounded border border-green-200">
+                            <div className="flex items-start space-x-3">
+                              <svg className="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <div>
+                                <h4 className="text-sm font-medium text-gray-800 mb-1">Payment Instructions:</h4>
+                                <ul className="text-xs text-gray-600 space-y-1">
+                                  <li>• You will be redirected to Easypaisa portal</li>
+                                  <li>• Enter your MPIN to authorize payment</li>
+                                  <li>• You'll receive confirmation SMS after payment</li>
+                                </ul>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     )}

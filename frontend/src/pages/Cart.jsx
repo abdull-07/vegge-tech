@@ -20,6 +20,7 @@ const Cart = () => {
   });
 
   const [paymentOption, setPaymentOption] = useState("COD");
+  const [deliveryTime, setDeliveryTime] = useState("standard");
   const [selectedArea, setSelectedArea] = useState("");
   const [areaValidationMessage, setAreaValidationMessage] = useState("");
 
@@ -107,7 +108,7 @@ const Cart = () => {
 
   // Updated Price Calculation:
   const subtotal = getTotalCartPrice();
-  const deliveryFee = paymentOption === "Online" ? 0 : 30;
+  const deliveryFee = deliveryTime === "express" ? 50 : 0; // Express delivery costs Rs. 50, Standard is free
   const tax = +(subtotal * 0.05).toFixed(0); // 5% tax
   const totalAmount = subtotal + deliveryFee + tax;
 
@@ -337,6 +338,43 @@ const Cart = () => {
 
               {/* Payment Mathod */}
             </div>
+
+            {/* Delivery Time Selection - COD Only */}
+            <div className="mt-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Delivery Time</label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label className="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                  <input
+                    type="radio"
+                    name="deliveryTime"
+                    value="standard"
+                    checked={deliveryTime === 'standard'}
+                    onChange={(e) => setDeliveryTime(e.target.value)}
+                    className="text-primary focus:ring-primary"
+                  />
+                  <div className="ml-3">
+                    <div className="font-medium text-gray-800">Standard Delivery</div>
+                    <div className="text-sm text-gray-600">2-4 hours • Free</div>
+                  </div>
+                </label>
+                <label className="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                  <input
+                    type="radio"
+                    name="deliveryTime"
+                    value="express"
+                    checked={deliveryTime === 'express'}
+                    onChange={(e) => setDeliveryTime(e.target.value)}
+                    className="text-primary focus:ring-primary"
+                  />
+                  <div className="ml-3">
+                    <div className="font-medium text-gray-800">Express Delivery</div>
+                    <div className="text-sm text-gray-600">30-60 minutes • Rs. 50</div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <p className="text-sm font-medium uppercase mt-6 text-text">Payment Method</p>
 
             <p className="text-sm font-medium uppercase mt-6 text-text">Payment Method</p>
 
