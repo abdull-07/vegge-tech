@@ -6,10 +6,50 @@ import toast from 'react-hot-toast';
 
 const ProductDetails = () => {
   const { id } = useParams();
-  const { products, reviews, setReviews, reviewForm, setReviewForm, addToCart, navigate } = useAppContext();
+  const { products, axios, user, addToCart, navigate } = useAppContext();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
+  const [reviews, setReviews] = useState([]);
+  const [reviewStats, setReviewStats] = useState({ totalReviews: 0, averageRating: 0, ratingDistribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } });
+  const [reviewForm, setReviewForm] = useState({ 
+    name: user ? user.name : '', 
+    rating: 5, 
+    comment: '' 
+  });
+  const [submittingReview, setSubmittingReview] = useState(false);
+
+  // Fetch reviews when product changes
+  useEffect(() => {
+    const fetchReviews = async () => {
+      if (id) {
+        try {
+          const { data } = await axios.get(`/api/reviews/${id}`);
+          if (data.success && data.reviews) {
+            setReviews(data.reviews);
+          }
+        } catch (error) {
+          console.error("Error fetching reviews:", error);
+        }
+      }
+    };
+
+    const fetchReviewStats = async () => {
+      if (id) {
+        try {
+          const { data } = await axios.get(`/api/reviews/${id}/stats`);
+          if (data.success && data.stats) {
+            setReviewStats(data.stats);
+          }
+        } catch (error) {
+          console.error("Error fetching review stats:", error);
+        }
+      }
+    };
+
+    fetchReviews();
+    fetchReviewStats();
+  }, [id, axios]);
 
   // Find product from all categories
   useEffect(() => {
@@ -25,7 +65,17 @@ const ProductDetails = () => {
     }
   }, [products, id]);
 
-  const handleReviewSubmit = (e) => {
+  // Update review form when user changes
+  useEffect(() => {
+    if (user) {
+      setReviewForm(prev => ({
+        ...prev,
+        name: user.name || ''
+      }));
+    }
+  }, [user]);
+
+  const handleReviewSubmit = async (e) => {
     e.preventDefault();
 
     if (!reviewForm.name || !reviewForm.comment) {
@@ -33,17 +83,45 @@ const ProductDetails = () => {
       return;
     }
 
-    const newReview = {
-      id: Date.now(),
-      name: reviewForm.name,
-      rating: reviewForm.rating,
-      comment: reviewForm.comment,
-      date: new Date().toLocaleDateString()
-    };
+    try {
+      setSubmittingReview(true);
+      
+      const { data } = await axios.post('/api/reviews', {
+        productId: id,
+        name: reviewForm.name,
+        rating: reviewForm.rating,
+        comment: reviewForm.comment
+      });
 
-    setReviews((prevReviews) => [newReview, ...prevReviews]);
-    setReviewForm({ name: '', rating: 5, comment: '' });
-    toast.success("Review submitted successfully");
+      if (data.success) {
+        // Add the new review to the list
+        setReviews(prevReviews => [data.review, ...prevReviews]);
+        
+        // Reset the form
+        setReviewForm({ 
+          name: user ? user.name : '', 
+          rating: 5, 
+          comment: '' 
+        });
+        
+        // Refresh review stats
+        try {
+          const statsResponse = await axios.get(`/api/reviews/${id}/stats`);
+          if (statsResponse.data.success) {
+            setReviewStats(statsResponse.data.stats);
+          }
+        } catch (error) {
+          console.error("Error refreshing review stats:", error);
+        }
+        
+        toast.success("Review submitted successfully");
+      }
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      toast.error(error.response?.data?.message || "Failed to submit review");
+    } finally {
+      setSubmittingReview(false);
+    }
   };
 
   // Handle quantity changes
@@ -302,6 +380,58 @@ const ProductDetails = () => {
         <div className="mt-12 bg-white rounded-xl shadow-lg p-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Customer Reviews</h2>
 
+          {/* Review Stats */}
+          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Customer Ratings</h3>
+                <div className="flex items-center gap-2 mt-2">
+                  <div className="flex items-center">
+                    {Array(5).fill('').map((_, i) => (
+                      <svg key={i} className="w-5 h-5" viewBox="0 0 18 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                          d="M8.049.927c.3-.921 1.603-.921 1.902 0l1.294 3.983a1 1 0 0 0 .951.69h4.188c.969 0 1.371 1.24.588 1.81l-3.388 2.46a1 1 0 0 0-.364 1.118l1.295 3.983c.299.921-.756 1.688-1.54 1.118L9.589 13.63a1 1 0 0 0-1.176 0l-3.389 2.46c-.783.57-1.838-.197-1.539-1.118L4.78 10.99a1 1 0 0 0-.363-1.118L1.028 7.41c-.783-.57-.38-1.81.588-1.81h4.188a1 1 0 0 0 .95-.69z"
+                          fill={i < reviewStats.averageRating ? 'var(--primary)' : '#e5e7eb'}
+                        />
+                      </svg>
+                    ))}
+                  </div>
+                  <span className="text-lg font-semibold">{reviewStats.averageRating.toFixed(1)}</span>
+                  <span className="text-sm text-gray-500">({reviewStats.totalReviews} reviews)</span>
+                </div>
+              </div>
+              
+              {reviewStats.ratingDistribution && (
+                <div className="mt-4 md:mt-0 w-full md:w-1/2 max-w-xs">
+                  {[5, 4, 3, 2, 1].map(star => {
+                    const count = reviewStats.ratingDistribution[star] || 0;
+                    const percentage = reviewStats.totalReviews > 0 
+                      ? Math.round((count / reviewStats.totalReviews) * 100) 
+                      : 0;
+                    
+                    return (
+                      <div key={star} className="flex items-center gap-2 mb-1">
+                        <div className="flex items-center gap-1 w-12">
+                          <span>{star}</span>
+                          <svg className="w-4 h-4" viewBox="0 0 18 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8.049.927c.3-.921 1.603-.921 1.902 0l1.294 3.983a1 1 0 0 0 .951.69h4.188c.969 0 1.371 1.24.588 1.81l-3.388 2.46a1 1 0 0 0-.364 1.118l1.295 3.983c.299.921-.756 1.688-1.54 1.118L9.589 13.63a1 1 0 0 0-1.176 0l-3.389 2.46c-.783.57-1.838-.197-1.539-1.118L4.78 10.99a1 1 0 0 0-.363-1.118L1.028 7.41c-.783-.57-.38-1.81.588-1.81h4.188a1 1 0 0 0 .95-.69z" fill="var(--primary)" />
+                          </svg>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                          <div 
+                            className="bg-primary h-2.5 rounded-full" 
+                            style={{ width: `${percentage}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-xs text-gray-500 w-8">{count}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Add Review Form */}
           <div className="mb-8 p-6 bg-gray-50 rounded-lg">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Write a Review</h3>
@@ -335,9 +465,17 @@ const ProductDetails = () => {
               />
               <button
                 type="submit"
-                className="px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-secondary transition-colors duration-200"
+                disabled={submittingReview}
+                className="px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-secondary transition-colors duration-200 flex items-center justify-center gap-2"
               >
-                Submit Review
+                {submittingReview ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                    <span>Submitting...</span>
+                  </>
+                ) : (
+                  'Submit Review'
+                )}
               </button>
             </form>
           </div>
@@ -352,7 +490,7 @@ const ProductDetails = () => {
             ) : (
               <div className="space-y-4">
                 {reviews.map((review) => (
-                  <div key={review.id} className="border border-gray-200 rounded-lg p-6">
+                  <div key={review._id} className="border border-gray-200 rounded-lg p-6">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
@@ -363,6 +501,14 @@ const ProductDetails = () => {
                         <div>
                           <p className="font-semibold text-gray-900">{review.name}</p>
                           <p className="text-sm text-gray-500">{review.date}</p>
+                          {review.isVerified && (
+                            <span className="inline-flex items-center text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full mt-1">
+                              <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                              Verified Purchase
+                            </span>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center">

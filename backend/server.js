@@ -65,6 +65,15 @@ app.use('/api/payment', paymentRouter);
 // Test Route for email verification
 app.use('/api/test', testRoute);
 
+// Dev Route (development only)
+app.use('/api/dev', devRoute);
+
+// Import review routes
+import reviewRoute from './routes/reviewRoute.js';
+
+// Review Routes
+app.use('/api/reviews', reviewRoute);
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })

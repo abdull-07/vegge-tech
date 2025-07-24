@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Email Verification</title>
+</head>
+<body>
+    <h2>Debug Email Verification Status</h2>
+    <form id="debugForm">
+        <label for="email">Enter your email:</label>
+        <input type="email" id="email" required>
+        <button type="submit">Check Status</button>
+    </form>
+    
+    <div id="result" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc;"></div>
+
+    <script>
+        document.getElementById('debugForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/test/debug-user', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <h3>User Status:</h3>
+                        <p><strong>Name:</strong> ${data.user.name}</p>
+                        <p><strong>Email:</strong> ${data.user.email}</p>
+                        <p><strong>Is Verified:</strong> ${data.user.isVerified ? 'YES ✅' : 'NO ❌'}</p>
+                        <p><strong>Has Verification Token:</strong> ${data.user.hasVerificationToken ? 'YES' : 'NO'}</p>
+                        <p><strong>Token Expired:</strong> ${data.user.tokenExpired ? 'YES' : 'NO'}</p>
+                        <p><strong>Token Expires:</strong> ${data.user.verificationExpires || 'N/A'}</p>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<p style="color: red;">Error: ${data.message}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color: red;">Network Error: ${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>

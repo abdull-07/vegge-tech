@@ -16,6 +16,19 @@ const ProductCard = ({ product }) => {
   return (
     <div className="border border-gray-300 rounded-md px-4 py-3 bg-background w-full">
       <div className="relative group cursor-pointer flex items-center justify-center">
+        {/* Category Label */}
+        <span className={`absolute top-2 right-2 text-white text-xs px-3 py-1 rounded-full font-semibold z-10 ${
+          product.category.toLowerCase() === 'fruits' || product.category.toLowerCase() === 'fruit' 
+            ? 'bg-orange-500' 
+            : product.category.toLowerCase() === 'vegetables' || product.category.toLowerCase() === 'vegetable'
+            ? 'bg-green-500'
+            : product.category.toLowerCase() === 'bundles' || product.category.toLowerCase() === 'bundle'
+            ? 'bg-red-500'
+            : 'bg-gray-500'
+        }`}>
+          {product.category.toUpperCase()}
+        </span>
+        
         {!product.inStock && (
           <span className="absolute top-2 left-2 bg-red-600 text-white text-xs px-2 py-1 rounded font-semibold z-10">
             Out of Stock

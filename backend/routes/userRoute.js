@@ -14,21 +14,22 @@ import {
     addToCart, updateCartItem, removeFromCart, getCart, clearCart
 } from "../controllers/userController.js";
 import userAuth from "../middlewares/userAuth.js";
+import { checkDisposableEmailStrict, checkDisposableEmailLogin } from "../middlewares/disposableEmailMiddleware.js";
 
 const router = express.Router();
 
-// Authentication routes
-router.post('/register', registerUser);
-router.post('/login', loginUser);
+// Authentication routes with disposable email protection
+router.post('/register', checkDisposableEmailStrict, registerUser);
+router.post('/login', checkDisposableEmailLogin, loginUser);
 router.get('/logout', userAuth, logoutUser);
 router.get('/check-auth', userAuth, checkAuthuser);
 
 // Email verification routes
 router.get('/verify-email/:token', verifyEmail);
-router.post('/resend-verification', resendVerification);
+router.post('/resend-verification', checkDisposableEmailStrict, resendVerification);
 
 // Password reset routes
-router.post('/forgot-password', forgotPassword);
+router.post('/forgot-password', checkDisposableEmailStrict, forgotPassword);
 router.post('/reset-password/:token', resetPassword);
 
 // User profile routes

@@ -23,6 +23,7 @@ const Cart = () => {
   const [deliveryTime, setDeliveryTime] = useState("standard");
   const [selectedArea, setSelectedArea] = useState("");
   const [areaValidationMessage, setAreaValidationMessage] = useState("");
+  const [emailVerified, setEmailVerified] = useState(true); // Default to true, will check in useEffect
 
   // Allowed delivery areas
   const deliveryAreas = [
@@ -95,6 +96,11 @@ const Cart = () => {
   // Fetch user addresses when component mounts or user changes
   useEffect(() => {
     fetchUserAddresses();
+    
+    // Check if user's email is verified
+    if (user) {
+      setEmailVerified(user.isVerified || false);
+    }
   }, [user]);
 
   // handle the product quantituy
@@ -133,7 +139,7 @@ const Cart = () => {
 
   // Check if the selected address matches the selected area
   const isAreaValid = selectedArea && selectedAddress ? validateAddressArea(selectedAddress, selectedArea) : false;
-  const canPlaceOrder = isOrderAmountValid && selectedArea && isAreaValid;
+  const canPlaceOrder = isOrderAmountValid && selectedArea && isAreaValid && (user ? emailVerified : true);
 
   // Update area validation message when area or address changes
   useEffect(() => {
@@ -342,7 +348,7 @@ const Cart = () => {
             {/* Delivery Time Selection - COD Only */}
             <div className="mt-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">Delivery Time</label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-4">
                 <label className="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
                   <input
                     type="radio"
@@ -373,8 +379,6 @@ const Cart = () => {
                 </label>
               </div>
             </div>
-
-            <p className="text-sm font-medium uppercase mt-6 text-text">Payment Method</p>
 
             <p className="text-sm font-medium uppercase mt-6 text-text">Payment Method</p>
 
@@ -430,6 +434,24 @@ const Cart = () => {
               </p>
             </div>
           )}
+          
+          {/* Email Verification Warning */}
+          {user && !emailVerified && (
+            <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-md">
+              <p className="text-sm text-orange-800">
+                <span className="font-medium">Email Verification Required</span>
+              </p>
+              <p className="text-xs text-orange-600 mt-1">
+                Please verify your email address before placing an order. Check your inbox for the verification link.
+              </p>
+              <button 
+                onClick={() => navigate("/account")}
+                className="mt-2 text-xs bg-orange-500 text-white px-3 py-1 rounded hover:bg-orange-600 transition-colors"
+              >
+                Go to Profile
+              </button>
+            </div>
+          )}
 
           <button
             onClick={handlePlaceOrder}
@@ -445,7 +467,9 @@ const Cart = () => {
                 ? "Select Delivery Area"
                 : !isAreaValid && selectedArea && selectedAddress
                   ? "Area Not Supported"
-                  : paymentOption === "Online" ? "Proceed to Checkout" : "Place Order"
+                  : user && !emailVerified
+                    ? "Email Verification Required"
+                    : paymentOption === "Online" ? "Proceed to Checkout" : "Place Order"
             }
           </button>
         </div>

@@ -29,6 +29,7 @@ import ResendVerification from './pages/ResendVerification';
 import ResetPassword from './pages/ResetPassword';
 import Account from './pages/Account';
 import TestEmail from './pages/TestEmail';
+import PaymentVerification from './pages/PaymentVerification';
 
 function App() {
   const isSellerPath = useLocation().pathname.includes("seller")
@@ -64,6 +65,7 @@ function App() {
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/faq" element={<FAQ />} />
+            <Route path="/payment/verify" element={<PaymentVerification />} />
           </Routes>
         </div>
         {isSellerPath ? null : <Footer />}

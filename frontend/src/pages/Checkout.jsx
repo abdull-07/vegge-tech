@@ -1,14 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAppContext } from '../context/AppContext';
+import toast from 'react-hot-toast';
 
 function Checkout() {
+  const navigate = useNavigate();
+  const { user, cartItems, getTotalCartPrice, axios, clearCart } = useAppContext();
+  
   const [isVisible, setIsVisible] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [paymentError, setPaymentError] = useState('');
+  const [realCartItems, setRealCartItems] = useState([]);
+  
   const [formData, setFormData] = useState({
     // Personal Information
-    firstName: '',
-    lastName: '',
-    email: '',
+    firstName: user?.name?.split(' ')[0] || '',
+    lastName: user?.name?.split(' ')[1] || '',
+    email: user?.email || '',
     phone: '',
 
     // Delivery Address
@@ -19,32 +28,48 @@ function Checkout() {
 
     // Payment Information
     paymentMethod: 'jazzcash',
-    cardNumber: '',
-    expiryDate: '',
-    cvv: '',
-    cardName: '',
+    jazzCashNumber: '',
+    easypaisaNumber: '',
 
     // Order Options
     deliveryTime: 'standard',
     specialRequests: ''
   });
 
-  // Sample cart items (in real app, this would come from context/state)
-  const [cartItems] = useState([
-    { id: 1, name: 'Fresh Bananas', price: 2.99, quantity: 2, image: '🍌' },
-    { id: 2, name: 'Organic Apples', price: 4.50, quantity: 1, image: '🍎' },
-    { id: 3, name: 'Fresh Spinach', price: 3.25, quantity: 1, image: '🥬' },
-    { id: 4, name: 'Whole Milk', price: 3.99, quantity: 1, image: '🥛' }
-  ]);
-
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const deliveryFee = 2.99;
-  const tax = subtotal * 0.08;
+  // Calculate order totals
+  const subtotal = getTotalCartPrice();
+  const deliveryFee = formData.deliveryTime === 'express' ? 50 : 0;
+  const tax = Math.round(subtotal * 0.05); // 5% tax
   const total = subtotal + deliveryFee + tax;
 
+  // Get real cart items from context
   useEffect(() => {
     setIsVisible(true);
-  }, []);
+    
+    // Get cart items from the app context
+    if (Object.keys(cartItems).length > 0) {
+      // Convert cart items to array format needed for checkout
+      const items = Object.entries(cartItems).map(([productId, quantity]) => ({
+        productId,
+        quantity
+      }));
+      setRealCartItems(items);
+    } else {
+      // Redirect to cart if no items
+      navigate('/cart');
+    }
+  }, [cartItems, navigate]);
+  
+  // Check if user is logged in and verified
+  useEffect(() => {
+    if (!user) {
+      toast.error("Please login to proceed with checkout");
+      navigate('/cart');
+    } else if (!user.isVerified) {
+      toast.error("Please verify your email before checkout");
+      navigate('/cart');
+    }
+  }, [user, navigate]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -66,10 +91,96 @@ function Checkout() {
     }
   };
 
-  const handleSubmitOrder = (e) => {
+  const handleSubmitOrder = async (e) => {
     e.preventDefault();
-    // Handle order submission logic here
-    alert('Order placed successfully! You will receive a confirmation email shortly.');
+    setIsLoading(true);
+    setPaymentError('');
+    
+    try {
+      // Prepare order data
+      const orderData = {
+        items: realCartItems,
+        address: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          streetAddress: formData.address,
+          phoneNumber: formData.phone,
+          city: formData.city,
+          zipCode: formData.zipCode,
+          deliveryInstructions: formData.deliveryInstructions
+        },
+        deliveryTime: formData.deliveryTime
+      };
+      
+      // Process payment based on selected method
+      if (formData.paymentMethod === 'jazzcash') {
+        // Validate JazzCash number
+        if (!formData.jazzCashNumber || !/^03\d{2}-?\d{7}$/.test(formData.jazzCashNumber)) {
+          toast.error('Please enter a valid JazzCash mobile number (03XX-XXXXXXX)');
+          setIsLoading(false);
+          return;
+        }
+        
+        // Send payment request to JazzCash API
+        const paymentData = {
+          amount: total,
+          userPhone: formData.jazzCashNumber.replace(/-/g, ''),
+          email: formData.email
+        };
+        
+        toast.loading('Processing JazzCash payment...');
+        
+        const response = await axios.post('/api/payment/jazzcash', paymentData);
+        
+        if (response.data.redirectUrl) {
+          // Store order data in localStorage for retrieval after payment
+          localStorage.setItem('pendingOrder', JSON.stringify(orderData));
+          
+          // Redirect to JazzCash payment page
+          window.location.href = response.data.redirectUrl;
+          return;
+        } else {
+          throw new Error('Payment initialization failed');
+        }
+      } 
+      else if (formData.paymentMethod === 'easypaisa') {
+        // Validate Easypaisa number
+        if (!formData.easypaisaNumber || !/^03\d{2}-?\d{7}$/.test(formData.easypaisaNumber)) {
+          toast.error('Please enter a valid Easypaisa mobile number (03XX-XXXXXXX)');
+          setIsLoading(false);
+          return;
+        }
+        
+        // Send payment request to Easypaisa API
+        const paymentData = {
+          amount: total,
+          userPhone: formData.easypaisaNumber.replace(/-/g, ''),
+          email: formData.email
+        };
+        
+        toast.loading('Processing Easypaisa payment...');
+        
+        const response = await axios.post('/api/payment/easypaisa', paymentData);
+        
+        if (response.data.redirectUrl) {
+          // Store order data in localStorage for retrieval after payment
+          localStorage.setItem('pendingOrder', JSON.stringify(orderData));
+          
+          // Redirect to Easypaisa payment page
+          window.location.href = response.data.redirectUrl;
+          return;
+        } else {
+          throw new Error('Payment initialization failed');
+        }
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      toast.dismiss();
+      toast.error(error.response?.data?.message || 'Payment processing failed. Please try again.');
+      setPaymentError(error.response?.data?.message || 'Payment processing failed. Please try again.');
+    }
+    
+    setIsLoading(false);
   };
 
   return (
@@ -434,9 +545,20 @@ function Checkout() {
                 ) : (
                   <button
                     type="submit"
-                    className="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                    disabled={isLoading}
+                    className={`px-8 py-3 ${isLoading ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700'} text-white rounded-lg transition-colors font-medium flex items-center justify-center`}
                   >
-                    Place Order
+                    {isLoading ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Processing...
+                      </>
+                    ) : (
+                      'Place Order'
+                    )}
                   </button>
                 )}
               </div>

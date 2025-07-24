@@ -1,5 +1,6 @@
 import Order from "../models/OrdersModel.js";
 import Product from "../models/Products.js";
+import mongoose from "mongoose";
 import { createOrderNotification } from "./notificationController.js";
 
 // /api/order/cod
@@ -12,6 +13,22 @@ export const placeOrderCOD = async (req, res) => {
 
         if (!address || !items || items.length === 0) {
             return res.status(400).json({ message: "Invalid Data" });
+        }
+        
+        // Check if user's email is verified
+        const User = mongoose.model('User');
+        const user = await User.findById(userId);
+        
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        
+        // Prevent unverified users from placing orders
+        if (!user.isVerified) {
+            return res.status(403).json({ 
+                message: "Please verify your email before placing an order",
+                verificationRequired: true
+            });
         }
 
         // Calculate subtotal
@@ -69,6 +86,22 @@ export const placeOrderOnline = async (req, res) => {
 
         if (!items || items.length === 0 || !address || !paymentId) {
             return res.status(400).json({ message: "Missing order info" });
+        }
+        
+        // Check if user's email is verified
+        const User = mongoose.model('User');
+        const user = await User.findById(userId);
+        
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        
+        // Prevent unverified users from placing orders
+        if (!user.isVerified) {
+            return res.status(403).json({ 
+                message: "Please verify your email before placing an order",
+                verificationRequired: true
+            });
         }
 
         // (Optional) Verify paymentId from payment gateway here

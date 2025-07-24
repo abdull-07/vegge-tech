@@ -216,19 +216,35 @@ export const logoutUser = async (req, res) => {
 // /api/user/verify-email/:token
 export const verifyEmail = async (req, res) => {
     try {
-        const { token } = req.params;
+        let { token } = req.params;
         
         if (!token) {
+            console.log("No token provided in request");
             return res.status(400).json({ message: "Verification token is required" });
         }
         
+        // Decode the token in case it was URL encoded
+        token = decodeURIComponent(token);
+        
         console.log(`Attempting to verify email with token: ${token}`);
+        console.log(`Token length: ${token.length}`);
         
         // Find user with the verification token - without expiry check first
         const user = await User.findOne({ verificationToken: token });
         
         if (!user) {
             console.log(`No user found with token: ${token}`);
+            // Check if user exists but is already verified
+            const verifiedUser = await User.findOne({ 
+                verificationToken: { $exists: false },
+                isVerified: true 
+            });
+            if (verifiedUser) {
+                console.log("User might already be verified");
+                return res.status(400).json({ 
+                    message: "This email has already been verified. You can now login with your credentials." 
+                });
+            }
             return res.status(400).json({ 
                 message: "Invalid verification token. Please request a new verification email." 
             });

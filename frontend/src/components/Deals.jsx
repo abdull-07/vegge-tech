@@ -46,9 +46,9 @@ const Deals = ({ limit = 8, showViewAll = true }) => {
                   style={{ animationDelay: `${index * 150}ms` }}
                 >
                   {/* Deal badge */}
-                  <div className="absolute -top-2 -right-2 z-10 bg-gradient-to-r from-red-500 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                  {/* <div className="absolute -top-2 -right-2 z-10 bg-gradient-to-r from-red-500 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
                     DEAL
-                  </div>
+                  </div> */}
                   
                   {/* Glow effect */}
                   <div className="absolute inset-0 bg-gradient-to-r from-red-400/20 to-orange-400/20 rounded-lg blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
