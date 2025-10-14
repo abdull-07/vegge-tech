@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import Hero from '../components/hero'
+import Hero from '../components/Hero'
 import ProductTabs from '../components/ProductTabs'
 import Banner from '../components/Banner'
 import NewsLetter from '../components/NewsLetter'
