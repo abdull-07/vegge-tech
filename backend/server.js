@@ -27,12 +27,34 @@ await connectCloudinary() // connect to cloudinary
 const port = process.env.PORT || 3000 // listen on port
 
 
-const allowedOrigins = ['http://localhost:5173'] // Allow multiple origins
+const allowedOrigins = ['https://vegge-tech.vercel.app', 'http://localhost:5173'] // Allow multiple origins
+
+// CORS configuration
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+  exposedHeaders: ['Set-Cookie'],
+  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
+};
 
 // Middleware Configs
 app.use(express.json()) // to parse JSON body
 app.use(cookieParser())
-app.use(cors({origin: allowedOrigins, credentials: true}))
+app.use(cors(corsOptions))
+
+// Handle preflight requests
+app.options('*', cors(corsOptions));
 
 app.get('/', (req, res) => {
   res.send('HOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO GAYAA CONNECTED')
