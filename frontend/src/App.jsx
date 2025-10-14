@@ -20,7 +20,7 @@ import About from './pages/About';
 import Cart from './pages/Cart'
 import Checkout from './pages/Checkout'
 import MyOrders from './pages/MyOrders'
-import FAQ from './pages/faq'
+import FAQ from './pages/FAQ'
 import Contact from './pages/Contact';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import DealsOffers from './pages/DealsOffers';
