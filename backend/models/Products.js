@@ -8,7 +8,7 @@ const productSchema = new mongoose.Schema({
     offerPrice: { type: Number, required: true },
     inStock: { type: Boolean, required: true, default: 1 },
     imageUrl: { type: String, required: true },
-    sellerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Seller', required: false },
+    sellerId: { type: mongoose.Schema.Types.Mixed, ref: 'Seller', required: false }, // Allow both ObjectId and String
     ratings: { type: Number, default: 0, min: 0, max: 5 },
     reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Review' }],
     isAvailable: { type: Boolean, default: true },
