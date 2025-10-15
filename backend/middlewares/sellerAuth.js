@@ -8,12 +8,10 @@ const sellerAuth = async (req, res, next) => {
 
     try {
         const decoded = jwt.verify(sellerToken, process.env.JWT_SECRET)
-        console.log("Decoded token:", decoded); // Debug log
         
         if (decoded.email === process.env.ADMIN_EMAIL) { 
             req.userEmail = decoded.email;
             req.userId = decoded.id || decoded.email; // Set userId for compatibility
-            console.log("Seller authenticated:", req.userEmail); // Debug log
             next();
         } else {
             console.log("Invalid seller email:", decoded.email, "Expected:", process.env.ADMIN_EMAIL);
