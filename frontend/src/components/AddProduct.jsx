@@ -3,7 +3,7 @@ import { useAppContext } from '../context/AppContext';
 import toast from 'react-hot-toast';
 
 const AddProduct = () => {
-  const [file, setFile] = useState([]);
+  const [file, setFile] = useState(null);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
@@ -15,37 +15,64 @@ const AddProduct = () => {
 
   const addProduct = async (e) => {
     e.preventDefault();
+    
+    // Validation
+    if (!name.trim()) {
+      toast.error("Product name is required");
+      return;
+    }
+    if (!description.trim()) {
+      toast.error("Product description is required");
+      return;
+    }
+    if (!category) {
+      toast.error("Please select a category");
+      return;
+    }
+    if (!price || price <= 0) {
+      toast.error("Please enter a valid price");
+      return;
+    }
+    if (!offerPrice || offerPrice <= 0) {
+      toast.error("Please enter a valid offer price");
+      return;
+    }
+    if (!file) {
+      toast.error("Please select a product image");
+      return;
+    }
+
     try {
       const productData = {
-        name,
-        description: description.split('\n'),
+        name: name.trim(),
+        description: description.trim().split('\n').filter(line => line.trim()),
         category,
-        price,
-        offerPrice,
+        price: Number(price),
+        offerPrice: Number(offerPrice),
       }
 
       const formData = new FormData()
       formData.append('productData', JSON.stringify(productData))
-      if (file) {
-        formData.append('images', file);
-      }
-      await axios.post('/api/product/add', formData, {
+      formData.append('images', file);
+      
+      const response = await axios.post('/api/product/add', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
 
+      // Reset form
       setName('')
       setDescription('')
       setCategory('')
       setPrice('')
       setOfferPrice('')
-      setFile('')
-
+      setFile(null)
 
       toast.success("Product added successfully")
 
     } catch (error) {
-      toast.error("Failed to add product");
-      console.error(error);
+      console.error("Add product error:", error);
+      const errorMessage = error.response?.data?.message || "Failed to add product";
+      toast.error(errorMessage);
     }
   };
 

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Product Add</title>
+</head>
+<body>
+    <h1>Test Product Addition</h1>
+    <form id="productForm">
+        <div>
+            <label>Product Name:</label>
+            <input type="text" id="name" value="Test Product" required>
+        </div>
+        <div>
+            <label>Description:</label>
+            <textarea id="description" required>Test description</textarea>
+        </div>
+        <div>
+            <label>Category:</label>
+            <select id="category" required>
+                <option value="">Select Category</option>
+                <option value="Fruits">Fruits</option>
+                <option value="Vegetables">Vegetables</option>
+                <option value="Bundles">Bundles</option>
+            </select>
+        </div>
+        <div>
+            <label>Price:</label>
+            <input type="number" id="price" value="100" required>
+        </div>
+        <div>
+            <label>Offer Price:</label>
+            <input type="number" id="offerPrice" value="80" required>
+        </div>
+        <div>
+            <label>Image:</label>
+            <input type="file" id="image" accept="image/*" required>
+        </div>
+        <button type="submit">Add Product</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('productForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            const productData = {
+                name: document.getElementById('name').value,
+                description: document.getElementById('description').value.split('\n'),
+                category: document.getElementById('category').value,
+                price: Number(document.getElementById('price').value),
+                offerPrice: Number(document.getElementById('offerPrice').value),
+            };
+            
+            formData.append('productData', JSON.stringify(productData));
+            formData.append('images', document.getElementById('image').files[0]);
+            
+            try {
+                const response = await fetch('http://localhost:0711/api/product/add', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include'
+                });
+                
+                const result = await response.json();
+                document.getElementById('result').innerHTML = `
+                    <h3>Response:</h3>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+                
+                if (!response.ok) {
+                    console.error('Error:', result);
+                }
+            } catch (error) {
+                console.error('Network error:', error);
+                document.getElementById('result').innerHTML = `
+                    <h3>Error:</h3>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
