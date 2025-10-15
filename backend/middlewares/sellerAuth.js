@@ -14,6 +14,7 @@ const sellerAuth = async (req, res, next) => {
             req.userId = decoded.id || decoded.email; // Set userId for compatibility
             next();
         } else {
+            console.log("Invalid seller email:", decoded.email, "Expected:", process.env.ADMIN_EMAIL);
             return res.status(401).json({message: "Unauthorized, Invalid token"})
         }
     } catch (error) {
