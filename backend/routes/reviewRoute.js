@@ -9,11 +9,11 @@ import userAuth from '../middlewares/userAuth.js';
 
 const router = express.Router();
 
+// Get review statistics for a product (must come before /:productId)
+router.get('/:productId/stats', getReviewStats);
+
 // Get all reviews for a product
 router.get('/:productId', getProductReviews);
-
-// Get review statistics for a product
-router.get('/:productId/stats', getReviewStats);
 
 // Add a new review (optional user auth - allows anonymous reviews)
 router.post('/', (req, res, next) => {

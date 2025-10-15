@@ -54,6 +54,9 @@ export const registerUser = async (req, res) => {
             verificationExpires: tokenExpiry
         })
 
+        // Generate token for user
+        const token = generateToken(newUser._id)
+
         // Send verification email
         try {
             await sendVerificationEmail(
@@ -66,6 +69,15 @@ export const registerUser = async (req, res) => {
             console.error("Error sending verification email:", emailError);
             // Log the error but don't fail the registration
             // We'll still create the user but warn about the email issue
+            
+            // Set token as httpOnly cookie even if email fails
+            res.cookie("token", token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: 'strict',
+                maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+            })
+
             return res.status(201).json({
                 message: "User registered successfully, but there was an issue sending the verification email. Please use the 'Resend verification email' option.",
                 emailError: true,
@@ -78,9 +90,6 @@ export const registerUser = async (req, res) => {
                 }
             });
         }
-
-        // Generate token for user
-        const token = generateToken(newUser._id)
 
         // Set token as httpOnly cookie
         res.cookie("token", token, {
