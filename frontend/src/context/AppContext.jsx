@@ -52,9 +52,6 @@ export const AppContextProvider = ({ children }) => {
                 vegetables: data.products.filter(p => p.category === "Vegetables" || p.category === "vegetables"),
                 bundles: data.products.filter(p => p.category === "Bundles" || p.category.toLowerCase() === "bundles"),
             };
-            if (!data || !data.products || data.products.length === 0) {
-                toast.error("No products available")
-            }
             setProducts(grouped);
         } catch (error) {
             toast.error(`Failed to load products: ${error.response?.data?.message || error.message}`);
