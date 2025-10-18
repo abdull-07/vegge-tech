@@ -68,6 +68,8 @@ npm run dev
 ### 💳 Payments  
 ![Stripe](https://img.shields.io/badge/Stripe-008CDD?logo=stripe&logoColor=white)  
 
+## ✅ Coming Soon
+* Multi-vendor marketplace features
 
 ## 🤝 Contributing
 Fork the repo & clone it locally
